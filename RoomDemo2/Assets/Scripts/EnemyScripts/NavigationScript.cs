@@ -3,79 +3,126 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.SceneManagement;
 
 public class NavigationScript : MonoBehaviour
 {
-    public Transform Player;  // Reference to the player
+    public Transform Player; // Reference to the player
     private NavMeshAgent agent;
 
     // State variables
-    private enum EnemyState { Wandering, Searching, Chasing }
+    private enum EnemyState { Wandering, Searching, Chasing, Investigating }
     private EnemyState currentState = EnemyState.Wandering;
 
-    [SerializeField] float activationDistance = 20f;  // Distance within which the agent will start searching for the player
-    [SerializeField] float chasingDistance = 10f;     // Distance within which the agent will chase the player
-    [SerializeField] float wanderingTime = 5f;       // Time to wander before stopping (set to 5 seconds for demo)
-    [SerializeField] float searchingTime = 5f;       // Time to search before stopping (set to 5 seconds for demo)
-    [SerializeField] float wanderSpeed = 2f;         // Speed while wandering
-    [SerializeField] float chaseSpeed = 3.5f;        // Speed while chasing
+    [SerializeField] float activationDistance = 40f; // Base activation distance
+    [SerializeField] float chasingDistance = 20f;    // Base chasing distance
+    [SerializeField] float wanderingTime = 5f;      // Time to wander before stopping
+    [SerializeField] float searchingTime = 5f;      // Time to search before stopping
+    [SerializeField] float investigateSpeed = 2.5f; // Speed while investigating
+    [SerializeField] float wanderSpeed = 2f;        // Speed while wandering
+    [SerializeField] float chaseSpeed = 3.5f;       // Speed while chasing
 
     private bool isWandering = false;
     private bool isSearching = false;
 
     public TextMeshProUGUI stateText;
 
-    void Start() { 
+    private GameObject currentAttractionObject; // Reference to the active attraction object
+    [SerializeField] float attractionCheckRadius = 60f; // Radius to check for attraction objects
 
-        if (Player == null){
+    void Start()
+    {
+        if (Player == null)
+        {
             Player = GameObject.FindWithTag("Player").transform;
         }
         agent = GetComponent<NavMeshAgent>();
         agent.isStopped = true;
 
-
-        UpdateStateText();  // Initialize state text at the start
+        UpdateStateText(); // Initialize state text at the start
     }
 
-    void Update()
+    private void Update()
     {
+        // Adjust distances based on player's detection multiplier
+        float adjustedActivationDistance = activationDistance * PlayerMovement.DetectionMultiplier;
+        float adjustedChasingDistance = chasingDistance * PlayerMovement.DetectionMultiplier;
+
         float distanceToPlayer = Vector3.Distance(transform.position, Player.position);
+
+        // Check for nearby attraction objects
+        if (currentState != EnemyState.Chasing && currentState != EnemyState.Investigating)
+        {
+            currentAttractionObject = FindClosestAttractionObject();
+            if (currentAttractionObject != null)
+            {
+                Debug.Log("Switching to Investigating state");
+                Debug.Log($"Attraction object found: {currentAttractionObject.name}");
+                currentState = EnemyState.Investigating;
+                UpdateStateText();
+            }
+        }
 
         switch (currentState)
         {
             case EnemyState.Wandering:
+                //Debug.Log("State: Wandering");
                 Wander();
-                if (distanceToPlayer <= activationDistance)
+                if (distanceToPlayer <= adjustedActivationDistance)
                 {
-                    Debug.Log("searching...");
-                    currentState = EnemyState.Searching;  // Switch to searching if the player is close enough
-                    UpdateStateText();  // Update state display
+                    Debug.Log("Switching to Searching state");
+                    currentState = EnemyState.Searching;
+                    UpdateStateText();
                 }
                 break;
 
             case EnemyState.Searching:
+               // Debug.Log("State: Searching");
                 SearchForPlayer(distanceToPlayer);
-                if (distanceToPlayer <= chasingDistance)
+                if (distanceToPlayer <= adjustedChasingDistance)
                 {
-                    Debug.Log("chasing...");
-                    currentState = EnemyState.Chasing;  // Switch to chasing if the player is close enough
-                    UpdateStateText();  // Update state display
+                    Debug.Log("Switching to Chasing state");
+                    currentState = EnemyState.Chasing;
+                    UpdateStateText();
                 }
-                else if (distanceToPlayer > activationDistance)
+                else if (distanceToPlayer > adjustedActivationDistance)
                 {
-                    Debug.Log("wandering...");
-                    currentState = EnemyState.Wandering;  // Go back to wandering if the player is far enough
-                    UpdateStateText();  // Update state display
+                    Debug.Log("Switching to Wandering state");
+                    currentState = EnemyState.Wandering;
+                    UpdateStateText();
                 }
                 break;
 
             case EnemyState.Chasing:
+               // Debug.Log("State: Chasing");
                 ChasePlayer();
-                if (distanceToPlayer > chasingDistance)
+                if (distanceToPlayer > adjustedChasingDistance)
                 {
-                    currentState = EnemyState.Searching;  // Go back to searching if the player moves far enough
-                    UpdateStateText();  // Update state display
+                    Debug.Log("Switching to Searching state");
+                    currentState = EnemyState.Searching;
+                    UpdateStateText();
+                }
+                break;
+
+            case EnemyState.Investigating:
+                //Debug.Log("State: Investigating");
+                Investigate();
+                if (distanceToPlayer <= adjustedChasingDistance)
+                {
+                    Debug.Log("Switching to Chasing state");
+                    currentState = EnemyState.Chasing;
+                    UpdateStateText();
+                }
+                else if (distanceToPlayer <= adjustedActivationDistance)
+                {
+                    Debug.Log("Switching to Searching state");
+                    currentState = EnemyState.Searching;
+                    UpdateStateText();
+                }
+                else if (currentAttractionObject == null)
+                {
+                    Debug.Log("Attraction object destroyed, switching to Wandering state");
+                    currentState = EnemyState.Wandering;
+                    UpdateStateText();
                 }
                 break;
         }
@@ -85,7 +132,6 @@ public class NavigationScript : MonoBehaviour
     {
         if (!isWandering && agent.isOnNavMesh)
         {
-
             isWandering = true;
             agent.speed = wanderSpeed;
             agent.isStopped = false;
@@ -102,13 +148,12 @@ public class NavigationScript : MonoBehaviour
         NavMesh.SamplePosition(randomDirection, out hit, 10f, NavMesh.AllAreas);
         agent.SetDestination(hit.position);
 
-        // Wait for a few seconds before wandering again based on the wanderingTime value
+        // Wait for a few seconds before wandering again
         yield return new WaitForSeconds(wanderingTime);
 
         isWandering = false;
         agent.isStopped = true;
         yield return new WaitForSeconds(3f); // Stop for 3 seconds
-
     }
 
     private void SearchForPlayer(float distanceToPlayer)
@@ -123,45 +168,26 @@ public class NavigationScript : MonoBehaviour
             // Calculate direction towards player
             Vector3 directionToPlayer = (Player.position - transform.position).normalized;
 
-            // Apply a random angle to the direction to simulate searching
-            float randomAngle = Random.Range(-45f, 45f); // Random angle between -45 and 45 degrees
+            // Apply a random angle to simulate searching
+            float randomAngle = Random.Range(-45f, 45f);
             Vector3 rotatedDirection = Quaternion.Euler(0f, randomAngle, 0f) * directionToPlayer;
 
             // Move in the new direction for searching
-            agent.SetDestination(transform.position + rotatedDirection * 5f); // Move towards the rotated direction
+            agent.SetDestination(transform.position + rotatedDirection * 5f);
 
-            // Wait for the specified searchingTime before stopping and re-evaluating
+            // Wait for searching time before re-evaluating
             StartCoroutine(SearchCoroutine());
         }
     }
 
     private IEnumerator SearchCoroutine()
     {
-        // Wait for the specified searching time before deciding to move again
         yield return new WaitForSeconds(searchingTime);
 
-        // After searching, stop and wait for a brief moment (e.g., 3 seconds)
+        // After searching, stop for a brief moment
         agent.isStopped = true;
-        yield return new WaitForSeconds(3f); // Stop for 3 seconds
+        yield return new WaitForSeconds(3f);
 
-        // After stopping, decide whether to change direction or continue searching
-        if (Random.value < 0.5f)
-        {
-            // Change direction randomly
-            Debug.Log("changing direction");
-            Vector3 randomDirection = Random.insideUnitSphere * 10f;
-            randomDirection += transform.position;
-            NavMeshHit hit;
-            NavMesh.SamplePosition(randomDirection, out hit, 10f, NavMesh.AllAreas);
-            agent.SetDestination(hit.position);
-        }
-        else
-        {
-            // Otherwise, continue searching in the same direction
-            SearchForPlayer(Vector3.Distance(transform.position, Player.position));
-        }
-
-        // Allow the agent to move again after waiting
         isSearching = false;
     }
 
@@ -169,7 +195,45 @@ public class NavigationScript : MonoBehaviour
     {
         agent.isStopped = false;
         agent.speed = chaseSpeed;
-        agent.SetDestination(Player.position);  // Chase the player
+        agent.SetDestination(Player.position); // Chase the player
+    }
+
+    private void Investigate()
+    {
+        if (currentAttractionObject == null)
+        {
+            currentState = EnemyState.Wandering;
+            UpdateStateText();
+            return;
+        }
+
+        agent.isStopped = false;
+        agent.speed = investigateSpeed;
+        agent.SetDestination(currentAttractionObject.transform.position);
+
+        if (Vector3.Distance(transform.position, currentAttractionObject.transform.position) < 1f)
+        {
+            Destroy(currentAttractionObject); // Remove the attraction object after reaching it
+            currentAttractionObject = null;
+            currentState = EnemyState.Wandering; // Return to wandering after investigation
+            UpdateStateText();
+        }
+    }
+
+    private GameObject FindClosestAttractionObject()
+    {
+        //Debug.Log("Checking for attraction objects...");
+        Collider[] colliders = Physics.OverlapSphere(transform.position, attractionCheckRadius);
+        foreach (Collider collider in colliders)
+        {
+            if (collider.CompareTag("AttractionObject"))
+            {
+                Debug.Log($"Attraction object detected: {collider.gameObject.name}");
+                return collider.gameObject;
+            }
+        }
+        //Debug.Log("No attraction objects found.");
+        return null;
     }
 
     private void UpdateStateText()
@@ -177,58 +241,24 @@ public class NavigationScript : MonoBehaviour
         switch (currentState)
         {
             case EnemyState.Wandering:
-                stateText.text = "Wandering";
+                stateText.text = "";
+                stateText.color = Color.white;
                 break;
+
             case EnemyState.Searching:
-                stateText.text = "Searching";
+                stateText.text = "?";
+                stateText.color = Color.yellow;
                 break;
+
             case EnemyState.Chasing:
-                stateText.text = "Chasing";
+                stateText.text = "!";
+                stateText.color = Color.red;
+                break;
+
+            case EnemyState.Investigating:
+                stateText.text = "?";
+                stateText.color = Color.yellow;
                 break;
         }
     }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            Debug.Log("Collision detected with player.");
-
-            // Get the SceneStateManager instance and save the current scene state
-            SceneStateManager sceneManager = SceneStateManager.Instance;
-
-            // Collect all enemy transforms
-            List<Transform> enemies = new List<Transform>();
-            foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
-            {
-                enemies.Add(enemy.transform);
-            }
-
-            // Save the state (player position and enemy positions) to the singleton
-            sceneManager.currentSceneState.SaveState(collision.transform, enemies);
-
-            // Log the saved data for verification
-            Debug.Log("Saved Player Position: " + sceneManager.currentSceneState.playerPosition);
-            for (int i = 0; i < sceneManager.currentSceneState.enemyPositions.Count; i++)
-            {
-                Debug.Log("Saved Enemy " + i + " Position: " + sceneManager.currentSceneState.enemyPositions[i]);
-            }
-
-            // Load the battle scene
-            SceneManager.LoadScene("BattleScene"); // Assuming your battle scene is called "BattleScene"
-
-/*            // After loading, load the state from the singleton (just for testing here)
-            sceneManager.currentSceneState.LoadState(collision.transform, enemies);
-
-            // Log the loaded data for verification
-            Debug.Log("Loaded Player Position: " + collision.transform.position);
-            for (int i = 0; i < enemies.Count; i++)
-            {
-                Debug.Log("Loaded Enemy " + i + " Position: " + enemies[i].position);
-            }*/
-
-        }
-    }
-
-
 }

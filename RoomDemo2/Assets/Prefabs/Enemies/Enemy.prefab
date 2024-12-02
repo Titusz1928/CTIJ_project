@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -573, y: -19.8}
+  m_AnchoredPosition: {x: -573, y: -41.4}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2673331030428120567
@@ -76,8 +76,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -100,7 +100,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 0
   m_fontSizeMax: 0
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -385,7 +385,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -573, y: -41.4}
+  m_AnchoredPosition: {x: -573, y: -19.8}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5513687443106178281
@@ -416,7 +416,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Wandering
+  m_text: '
 
 '
   m_isRightToLeft: 0
@@ -445,13 +445,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25
-  m_fontSizeBase: 25
+  m_fontSize: 40
+  m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 0
   m_fontSizeMax: 0
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -578,7 +578,7 @@ GameObject:
   - component: {fileID: 5372613249222573783}
   - component: {fileID: 8273473269962039778}
   - component: {fileID: 154171224098242108}
-  - component: {fileID: 3359541699047280800}
+  - component: {fileID: 1174873813781751296}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -594,7 +594,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7098413946764699803}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.21125895, z: -0, w: 0.97743016}
+  m_LocalRotation: {x: 0, y: -0.21125662, z: 0, w: 0.9774307}
   m_LocalPosition: {x: 10.8, y: 0.54, z: -40.52}
   m_LocalScale: {x: 0.5, y: 1, z: 0.01}
   m_ConstrainProportionsScale: 0
@@ -748,7 +748,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   healthSlider: {fileID: 4820662744119279722}
---- !u!114 &3359541699047280800
+--- !u!114 &1174873813781751296
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -761,13 +761,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player: {fileID: 0}
-  activationDistance: 20
-  chasingDistance: 10
+  activationDistance: 40
+  chasingDistance: 20
   wanderingTime: 5
   searchingTime: 5
+  investigateSpeed: 2.5
   wanderSpeed: 2
   chaseSpeed: 3.5
   stateText: {fileID: 5938239414779020637}
+  attractionCheckRadius: 60
 --- !u!1 &7410297987339961835
 GameObject:
   m_ObjectHideFlags: 0

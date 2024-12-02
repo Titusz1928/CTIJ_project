@@ -7,10 +7,10 @@ public class StickFigureSpawnManager : MonoBehaviour
 {
     public Transform player;  // Reference to the player
     public GameObject enemyPrefab;  // The enemy prefab to spawn
-    public float checkInterval = 20f;  // Time interval for checking the enemy count
+    public float checkInterval = 5f;  // Time interval for checking the enemy count
     public float maxSpawnRadius = 100f;  // Max radius within which to spawn enemies around the player
     public float minSpawnRadius = 50f;   // Min radius outside which to spawn enemies from the player
-    public int maxEnemies = 3;  // Max number of enemies to maintain around the player
+    public int maxEnemies = 6;  // Max number of enemies to maintain around the player
     public int spawnCount = 3;  // Number of enemies to spawn if under maxEnemies
 
     private void Start()
