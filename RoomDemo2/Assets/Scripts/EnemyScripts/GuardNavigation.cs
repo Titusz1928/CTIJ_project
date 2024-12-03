@@ -12,7 +12,7 @@ public class GuardNavigation : MonoBehaviour
     private enum EnemyState { Guarding, Searching, Chasing }
     private EnemyState currentState = EnemyState.Guarding;
 
-    [SerializeField] private Transform guardCenter; // Center point for guarding
+    [SerializeField] public Transform guardCenter; // Center point for guarding
     [SerializeField] private float guardRadius = 20f; // Radius for guarding area
     [SerializeField] private float activationDistance = 40f; // Distance to activate searching
     [SerializeField] private float chasingDistance = 20f; // Distance to activate chasing
