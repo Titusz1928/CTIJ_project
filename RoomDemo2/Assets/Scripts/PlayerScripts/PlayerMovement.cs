@@ -31,6 +31,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float sprintAttractionDistance = 10f; // Attraction radius when sprinting
     [SerializeField] float jumpAttractionDistance = 15f; // Attraction radius when jumping
 
+    [SerializeField] GameObject battleCanvas; // Reference to the BattleCanvas
+
     private float currentStamina;
     private float mouseY = 0f;
     [SerializeField] float viewRange = 40f;
@@ -126,6 +128,90 @@ public class PlayerMovement : MonoBehaviour
             SpawnAttractionObject(jumpAttractionDistance);
         }
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Find all enemies in the scene (You can replace this with your actual way of finding enemies)
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+
+        List<IEnemy> enemiesInBattle = new List<IEnemy>();
+
+        // Loop through all enemies
+        foreach (GameObject enemyObject in enemies)
+        {
+            IEnemy enemy = enemyObject.GetComponent<IEnemy>();
+
+            // Check if the enemy has the IEnemy component and is in the "chasing" state
+            if (enemy != null && enemy.getCurrentState() == "Chasing")
+            {
+                // Check if the enemy is within 10 units of the player
+                float distanceToPlayer = Vector3.Distance(enemyObject.transform.position, transform.position); // Assuming `transform.position` is the player's position
+
+                if (distanceToPlayer < 10f)
+                {
+                    // Add the enemy to the list
+                    enemiesInBattle.Add(enemy);
+
+                    // Log the enemy's state in the console
+                    Debug.Log($"Enemy {enemyObject.name} with state: {enemy.getCurrentState()} is entering the battle.");
+                }
+            }
+        }
+
+        // If any enemies were found, start the battle
+        if (enemiesInBattle.Count > 0)
+        {
+            if (GameManager.BattleCanvas != null)
+            {
+                GameManager.BattleCanvas.SetActive(true);
+
+                // Find the InfoText component inside the BattleCanvas
+                TMPro.TextMeshProUGUI infoText = GameManager.BattleCanvas.transform
+                    .Find("Panel/InfoText")
+                    .GetComponent<TMPro.TextMeshProUGUI>();
+
+                if (infoText != null)
+                {
+                    // Prepare the battle info message
+                    string battleInfo = "Enemies in Battle:\n";
+                    foreach (IEnemy enemy in enemiesInBattle)
+                    {
+                        GameObject enemyObject = (enemy as MonoBehaviour)?.gameObject; // Get the GameObject associated with the enemy
+                        if (enemyObject != null)
+                        {
+                            HealthManager healthManager = enemyObject.GetComponent<HealthManager>();
+                            if (healthManager != null)
+                            {
+                                float currentHealth = healthManager.CurrentHealth;
+                                battleInfo += $"- {enemy.GetType().Name} (State: {enemy.getCurrentState()}, Health: {currentHealth}/{healthManager.maxHealth})\n";
+                            }
+                            else
+                            {
+                                battleInfo += $"- {enemy.GetType().Name} (State: {enemy.getCurrentState()}, Health: Unknown)\n";
+                            }
+                        }
+                        else
+                        {
+                            battleInfo += $"- {enemy.GetType().Name} (State: {enemy.getCurrentState()}, Health: Unknown)\n";
+                        }
+                    }
+
+                    // Update the InfoText with the battle info
+                    infoText.text = battleInfo;
+                    Debug.Log("Battle info updated in InfoText!");
+                }
+                else
+                {
+                    Debug.LogWarning("InfoText component not found in the BattleCanvas!");
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("no enemies which could enter battle");
+        }
+    }
+
 
     bool IsGrounded()
     {

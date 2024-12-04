@@ -7,8 +7,22 @@ public class HealthManager : MonoBehaviour
     private float currentHealth;
     public Slider healthSlider; // Reference to the health slider UI element
 
+    public float CurrentHealth => currentHealth;
+
     void Start()
     {
+        // Check if this object implements IEnemy
+        IEnemy enemy = GetComponent<IEnemy>();
+        if (enemy != null)
+        {
+            // Randomize health within the enemy's defined range
+            maxHealth = Random.Range(enemy.MinPossibleHealth, enemy.MaxPossibleHealth);
+        }
+        else
+        {
+            Debug.LogWarning("No IEnemy implementation found on this object.");
+        }
+
         currentHealth = maxHealth;
         if (healthSlider != null)
         {

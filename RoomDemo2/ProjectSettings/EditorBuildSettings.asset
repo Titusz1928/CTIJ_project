@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/secondroom.unity
-    guid: 0b7d5f7127884ec45924d40ba559ed18
+    path: Assets/Scenes/MainMenu1.unity
+    guid: bf08b6cceb77bcf49914bbcf02f1f441
+  - enabled: 1
+    path: Assets/Scenes/maptest1.unity
+    guid: 103bedb85199fdf4389c8936097ef098
   m_configObjects: {}

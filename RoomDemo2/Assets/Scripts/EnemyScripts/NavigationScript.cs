@@ -4,10 +4,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class NavigationScript : MonoBehaviour
+
+public class NavigationScript : MonoBehaviour, IEnemy
 {
     public Transform Player; // Reference to the player
     private NavMeshAgent agent;
+
+    public float MinPossibleHealth => 60f;
+    public float MaxPossibleHealth => 80f;
 
     // State variables
     private enum EnemyState { Wandering, Searching, Chasing, Investigating }
@@ -26,8 +30,11 @@ public class NavigationScript : MonoBehaviour
 
     public TextMeshProUGUI stateText;
 
+
     private GameObject currentAttractionObject; // Reference to the active attraction object
     [SerializeField] float attractionCheckRadius = 60f; // Radius to check for attraction objects
+
+
 
     void Start()
     {
@@ -43,6 +50,25 @@ public class NavigationScript : MonoBehaviour
 
     private void Update()
     {
+        // Check if the battle canvas is active
+        if (GameManager.BattleCanvas != null && GameManager.BattleCanvas.activeSelf)
+        {
+            // Stop the enemy movement
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero; // Ensure no movement
+            }
+            return; // Prevent further updates to enemy behavior
+        }
+
+        // Resume movement if the battle canvas is not active
+        if (agent.isOnNavMesh && agent.isStopped)
+        {
+            agent.isStopped = false;
+        }
+
+
         // Adjust distances based on player's detection multiplier
         float adjustedActivationDistance = activationDistance * PlayerMovement.DetectionMultiplier;
         float adjustedChasingDistance = chasingDistance * PlayerMovement.DetectionMultiplier;
@@ -126,6 +152,11 @@ public class NavigationScript : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    public string getCurrentState()
+    {
+        return currentState.ToString(); // Return the current state as a string
     }
 
     private void Wander()

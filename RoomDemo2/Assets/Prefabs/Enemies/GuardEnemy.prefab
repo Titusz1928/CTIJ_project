@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 999650662209269310, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -53
+      objectReference: {fileID: 0}
     - target: {fileID: 4240784569955275143, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -51,6 +55,10 @@ PrefabInstance:
     - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4468858213356221708, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 5667580648502941862, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
       propertyPath: m_AnchorMax.x
@@ -120,4 +128,16 @@ MonoBehaviour:
   chasingDistance: 20
   guardSpeed: 2
   chaseSpeed: 3.5
-  stateText: {fileID: 0}
+  stateText: {fileID: 8590527127762026617}
+  battleCanvas: {fileID: 0}
+--- !u!114 &8590527127762026617 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5938239414779020637, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+  m_PrefabInstance: {fileID: 2692998239241389348}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

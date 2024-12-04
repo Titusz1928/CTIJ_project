@@ -3,10 +3,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class GuardNavigation : MonoBehaviour
+public class GuardNavigation : MonoBehaviour, IEnemy
 {
     public Transform Player; // Reference to the player
     private NavMeshAgent agent;
+
+    public float MinPossibleHealth => 100f;
+    public float MaxPossibleHealth => 125f;
 
     // State variables
     private enum EnemyState { Guarding, Searching, Chasing }
@@ -23,6 +26,8 @@ public class GuardNavigation : MonoBehaviour
 
     public TextMeshProUGUI stateText;
 
+
+
     void Start()
     {
         if (Player == null)
@@ -37,6 +42,25 @@ public class GuardNavigation : MonoBehaviour
 
     private void Update()
     {
+
+        // Check if the battle canvas is active
+        if (GameManager.BattleCanvas != null && GameManager.BattleCanvas.activeSelf)
+        {
+            // Stop the enemy movement
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero; // Ensure no movement
+            }
+            return; // Prevent further updates to enemy behavior
+        }
+
+        // Resume movement if the battle canvas is not active
+        if (agent.isOnNavMesh && agent.isStopped)
+        {
+            agent.isStopped = false;
+        }
+
         float distanceToPlayer = Vector3.Distance(transform.position, Player.position);
 
         switch (currentState)
@@ -73,6 +97,11 @@ public class GuardNavigation : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    public string getCurrentState()
+    {
+        return currentState.ToString(); // Return the current state as a string
     }
 
     private void Guard()

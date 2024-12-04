@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.AI.Navigation;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ public class MapGenerator : MonoBehaviour
     public GameObject roomPrefab; // Assign the Room prefab in the Inspector
     public GameObject chestPrefab; // Assign the Chest prefab in the Inspector
     public GameObject guardEnemyPrefab;
+
     public int gridRows = 5;
     public int gridCols = 5;
     public float roomSize = 20f; // Adjust based on the prefab's size
@@ -133,6 +135,7 @@ public class MapGenerator : MonoBehaviour
             {
                 Debug.LogWarning("GuardNavigation script not found on guard enemy prefab!");
             }
+
         }
     }
 

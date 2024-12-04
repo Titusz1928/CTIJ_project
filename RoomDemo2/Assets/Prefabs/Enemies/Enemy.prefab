@@ -769,6 +769,7 @@ MonoBehaviour:
   wanderSpeed: 2
   chaseSpeed: 3.5
   stateText: {fileID: 5938239414779020637}
+  battleCanvas: {fileID: 0}
   attractionCheckRadius: 60
 --- !u!1 &7410297987339961835
 GameObject:
