@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class BattleManager : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI infoText;
     [SerializeField] private TextMeshProUGUI playerHealthText;
     [SerializeField] private TextMeshProUGUI playerStaminaText;
+    [SerializeField] private TextMeshProUGUI gameOverText;
+
+    [SerializeField] private Button[] gameButtons;
 
     [SerializeField] private Slider playerHealthSlider;
     [SerializeField] private Slider playerStaminaSlider;
@@ -21,9 +25,14 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private GameObject enemyHealthPrefab; // Prefab for "enemyhealth" gameobject with slider setup
 
     private List<GameObject> activeEnemyHealthUI = new List<GameObject>(); // Track active health bars
+    private List<HealthManager> enemyHealthManagers = new List<HealthManager>(); // Track enemy health managers
+    [SerializeField] private PlayerHealth playerHealthManager; // Track player health manager
 
     public void StartBattle(List<IEnemy> enemies, float playerHealth, float playerStamina)
     {
+        gameOverText.gameObject.SetActive(false);
+        enemyHealthManagers.Clear();
+
         if (battleCanvas == null || enemyImages == null || enemyImages.Count == 0 || enemyHealthPrefab == null)
         {
             Debug.LogWarning("BattleCanvas, enemy image slots, or enemyHealthPrefab are not properly assigned.");
@@ -74,6 +83,17 @@ public class BattleManager : MonoBehaviour
                     RectTransform healthRect = healthUI.GetComponent<RectTransform>();
                     healthRect.anchoredPosition = enemyImageSlot.rectTransform.anchoredPosition + new Vector2(0, 150); // Position above the image
                     activeEnemyHealthUI.Add(healthUI);
+
+                    // Add the enemy's HealthManager to the list
+                    HealthManager healthManager = enemyObject.GetComponent<HealthManager>();
+                    if (healthManager != null)
+                    {
+                        enemyHealthManagers.Add(healthManager); // Populate enemyHealthManagers
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Enemy {i + 1} does not have a HealthManager component.");
+                    }
 
                     // Configure slider
                     Slider healthSlider = healthUI.GetComponent<Slider>();
@@ -133,11 +153,145 @@ public class BattleManager : MonoBehaviour
         infoText.text = battleInfo;
     }
 
+    public void EndTurn()
+    {
+        foreach (Button btn in gameButtons)
+        {
+            btn.interactable = false;
+            btn.gameObject.SetActive(false);
+        }
+        StartCoroutine(ExecuteEndTurn());
+        Debug.Log("button works");
+    }
+
+    private IEnumerator ExecuteEndTurn()
+    {
+        Debug.Log("Starting end-turn sequence.");
+
+        // Process enemies first
+        Debug.Log("enemies remaining:" + enemyHealthManagers.Count);
+
+        for (int i = 0; i < enemyHealthManagers.Count; i++)
+        {
+            HealthManager enemyHealth = enemyHealthManagers[i];
+            Debug.Log("enemy nr. "+ i+ ", health="+ enemyHealth);
+            if (enemyHealth != null)
+            {
+                Debug.Log($"Processing enemy {i + 1}/{enemyHealthManagers.Count} with initial health: {enemyHealth.CurrentHealth}");
+
+                // Decrease health using the method
+
+                enemyHealth.DecreaseHealth(50);
+                Debug.Log($"Enemy {i + 1} health decreased. Current health: {enemyHealth.CurrentHealth}");
+
+                // Update UI slider
+                if (activeEnemyHealthUI[i] != null)
+                {
+                    Slider healthSlider = activeEnemyHealthUI[i].GetComponent<Slider>();
+                    if (healthSlider != null)
+                    {
+                        healthSlider.value = enemyHealth.CurrentHealth;
+                        Debug.Log($"Enemy {i + 1} UI health slider updated to: {healthSlider.value}");
+                    }
+
+                    // Update info text
+                    TextMeshProUGUI healthInfoText = activeEnemyHealthUI[i].GetComponentInChildren<TextMeshProUGUI>();
+                    if (healthInfoText != null)
+                    {
+                        healthInfoText.text = $"{enemyHealth.CurrentHealth}/{enemyHealth.maxHealth}";
+                        Debug.Log($"Enemy {i + 1} UI health text updated to: {healthInfoText.text}");
+                    }
+                }
+
+                // Wait a few seconds
+                yield return new WaitForSeconds(2f);
+            }
+            else
+            {
+                Debug.LogWarning($"Enemy {i + 1} does not have a valid HealthManager component.");
+            }
+        }
+
+        // Process player health
+        if (playerHealthManager != null)
+        {
+            Debug.Log($"Processing player health with initial health: {playerHealthManager.getCurrentHealth()}");
+
+            playerHealthManager.DecreaseHealth(10);
+            Debug.Log($"Player health decreased. Current health: {playerHealthManager.getCurrentHealth()}");
+
+            // Update player health UI
+            if (playerHealthSlider != null)
+            {
+                playerHealthSlider.value = playerHealthManager.getCurrentHealth();
+                Debug.Log($"Player health slider updated to: {playerHealthSlider.value}");
+            }
+
+            if (playerHealthText != null)
+            {
+                playerHealthText.text = $"{playerHealthManager.getCurrentHealth()}/100";
+                Debug.Log($"Player health text updated to: {playerHealthText.text}");
+            }
+
+            // Wait for player health animation (future feature)
+            yield return new WaitForSeconds(2f);
+
+            if (playerHealthManager.getCurrentHealth() <= 0)
+            {
+                StartCoroutine(HandleGameOver());
+            }
+        }
+        else
+        {
+            Debug.LogWarning("PlayerHealthManager is null. Skipping player health processing.");
+        }
+
+        int nullCount = 0;
+        foreach (var eHealth in enemyHealthManagers)
+        {
+            if (eHealth == null)
+            {
+                nullCount++;
+            }
+        }
+
+        // Check if all enemies have null health
+        Debug.Log("!!!!      " + nullCount + "?" + enemyHealthManagers.Count);
+        if (nullCount == enemyHealthManagers.Count)
+        {
+            EndBattle(); // Call your EndBattle method if all enemies are defeated
+        }
+
+        // Update info text for the next turn
+        infoText.text = "Turn ended. Prepare for the next move!";
+        Debug.Log("End-turn sequence complete. Info text updated.");
+
+        foreach (Button btn in gameButtons)
+        {
+            btn.interactable = true;
+            btn.gameObject.SetActive(true);
+        }
+    }
+
+    IEnumerator HandleGameOver()
+    {
+        // Display the Game Over text
+        gameOverText.gameObject.SetActive(true);
+
+
+        // Wait for the specified time
+        yield return new WaitForSeconds(5);
+
+        // Load the MainMenu1 scene
+        SceneManager.LoadScene("MainMenu1");
+    }
+
+
+
     public void OnExitBattleButtonClick()
     {
         EndBattle();
         Debug.Log("Exited Battle");
-        // Additional logic to reset the game state can go here if needed
     }
 
     public void EndBattle()

@@ -15,6 +15,7 @@ public class PlayerHealth : MonoBehaviour
         return currentHealth; 
     }
 
+
     private void Start()
     {
         // Initialize health
@@ -30,11 +31,11 @@ public class PlayerHealth : MonoBehaviour
 
     private void Update()
     {
-        // Decrease health by 5 when "D" key is pressed
+        /*// Decrease health by 5 when "D" key is pressed
         if (Input.GetKeyDown(KeyCode.D))
         {
             DecreaseHealth(5);
-        }
+        }*/
     }
 
     public void DecreaseHealth(int amount)
