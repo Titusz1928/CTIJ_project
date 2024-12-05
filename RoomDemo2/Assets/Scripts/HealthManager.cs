@@ -5,7 +5,7 @@ public class HealthManager : MonoBehaviour
 {
     public float maxHealth = 100f;
     private float currentHealth;
-    public Slider healthSlider; // Reference to the health slider UI element
+    public Slider healthSlider2;
 
     public float CurrentHealth => currentHealth;
 
@@ -24,10 +24,10 @@ public class HealthManager : MonoBehaviour
         }
 
         currentHealth = maxHealth;
-        if (healthSlider != null)
+        if (healthSlider2 != null)
         {
-            healthSlider.maxValue = maxHealth;
-            healthSlider.value = currentHealth;
+            healthSlider2.maxValue = maxHealth;
+            healthSlider2.value = currentHealth;
         }
     }
 
@@ -37,9 +37,9 @@ public class HealthManager : MonoBehaviour
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         // Update the slider value
-        if (healthSlider != null)
+        if (healthSlider2 != null)
         {
-            healthSlider.value = currentHealth;
+            healthSlider2.value = currentHealth;
         }
 
         if (currentHealth <= 0)
@@ -55,9 +55,9 @@ public class HealthManager : MonoBehaviour
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         // Update the slider value
-        if (healthSlider != null)
+        if (healthSlider2 != null)
         {
-            healthSlider.value = currentHealth;
+            healthSlider2.value = currentHealth;
         }
     }
 }

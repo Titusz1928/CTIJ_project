@@ -20,15 +20,18 @@ public class PlayerShooting : MonoBehaviour
 
     void Shoot()
     {
-        // Instantiate bullet at the shooting point
-        GameObject bullet = Instantiate(bulletPrefab, shootingPoint.position, Quaternion.identity);
+        if (!GameManager.BattleCanvas.activeSelf)
+        {
+            // Instantiate bullet at the shooting point
+            GameObject bullet = Instantiate(bulletPrefab, shootingPoint.position, Quaternion.identity);
 
-        // Assign the bullet's speed for kinematic movement
-        Bullet bulletScript = bullet.GetComponent<Bullet>();
-        bulletScript.Initialize(Camera.main.transform.forward, bulletSpeed);
+            // Assign the bullet's speed for kinematic movement
+            Bullet bulletScript = bullet.GetComponent<Bullet>();
+            bulletScript.Initialize(Camera.main.transform.forward, bulletSpeed);
 
-        // Destroy the bullet after a set time
-        Destroy(bullet, bulletLifetime);
+            // Destroy the bullet after a set time
+            Destroy(bullet, bulletLifetime);
+        }
     }
 }
 

@@ -15,7 +15,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float maxStamina = 100f;
     [SerializeField] float staminaDrainRate = 10f;
     [SerializeField] float staminaRegenRate = 5f;
-    [SerializeField] Slider staminaBar;
+
+    [SerializeField] Slider stamBar;
 
     [SerializeField] Transform groundCheck;
     [SerializeField] LayerMask ground;
@@ -33,6 +34,9 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] GameObject battleCanvas; // Reference to the BattleCanvas
 
+    [SerializeField] private BattleManager battleManager;
+    public PlayerHealth playerHealthManager;
+
     private float currentStamina;
     private float mouseY = 0f;
     [SerializeField] float viewRange = 40f;
@@ -45,8 +49,8 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         currentStamina = maxStamina;
-        staminaBar.maxValue = maxStamina;
-        staminaBar.value = currentStamina;
+        stamBar.maxValue = maxStamina;
+        stamBar.value = currentStamina;
 
         Vector3 cameraPosition = cameraTransform.localPosition;
         cameraPosition.y = normalCameraHeight;
@@ -55,160 +59,222 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // Movement inputs
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-
-        Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
-        moveDirection = transform.TransformDirection(moveDirection);
-
-        float currentSpeed = movementSpeed;
-
-        // Sprinting
-        bool isSprinting = Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.C) && (horizontalInput != 0 || verticalInput != 0);
-
-        if (isSprinting && currentStamina > 0)
+        if (!GameManager.BattleCanvas.activeSelf)
         {
-            currentSpeed *= sprintMultiplier;
-            currentStamina -= staminaDrainRate * Time.deltaTime;
-            if (currentStamina < 0) currentStamina = 0;
+            // Movement inputs
+            float horizontalInput = Input.GetAxis("Horizontal");
+            float verticalInput = Input.GetAxis("Vertical");
 
-            // Spawn attraction object for sprinting
-            if (Input.GetKeyDown(KeyCode.LeftShift))
+            Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
+            moveDirection = transform.TransformDirection(moveDirection);
+
+            float currentSpeed = movementSpeed;
+
+            // Sprinting
+            bool isSprinting = Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.C) && (horizontalInput != 0 || verticalInput != 0);
+
+            if (isSprinting && currentStamina > 0)
             {
-                SpawnAttractionObject(sprintAttractionDistance);
+                currentSpeed *= sprintMultiplier;
+                currentStamina -= staminaDrainRate * Time.deltaTime;
+                if (currentStamina < 0) currentStamina = 0;
+
+                // Spawn attraction object for sprinting
+                if (Input.GetKeyDown(KeyCode.LeftShift))
+                {
+                    SpawnAttractionObject(sprintAttractionDistance);
+                }
             }
-        }
-        else
-        {
-            currentStamina += staminaRegenRate * Time.deltaTime;
-            if (currentStamina > maxStamina) currentStamina = maxStamina;
-        }
+            else
+            {
+                currentStamina += staminaRegenRate * Time.deltaTime;
+                if (currentStamina > maxStamina) currentStamina = maxStamina;
+            }
 
-        // Sneaking
-        if (Input.GetKey(KeyCode.C))
-        {
-            isSneaking = true;
-            currentSpeed *= sneakMultiplier;
-            DetectionMultiplier = sneakDetectionMultiplier;
+            // Sneaking
+            if (Input.GetKey(KeyCode.C))
+            {
+                isSneaking = true;
+                currentSpeed *= sneakMultiplier;
+                DetectionMultiplier = sneakDetectionMultiplier;
 
-            Vector3 cameraPosition = cameraTransform.localPosition;
-            cameraPosition.y = Mathf.Lerp(cameraPosition.y, sneakCameraHeight, Time.deltaTime * cameraTransitionSpeed);
-            cameraTransform.localPosition = cameraPosition;
-        }
-        else
-        {
-            isSneaking = false;
-            DetectionMultiplier = 1f;
+                Vector3 cameraPosition = cameraTransform.localPosition;
+                cameraPosition.y = Mathf.Lerp(cameraPosition.y, sneakCameraHeight, Time.deltaTime * cameraTransitionSpeed);
+                cameraTransform.localPosition = cameraPosition;
+            }
+            else
+            {
+                isSneaking = false;
+                DetectionMultiplier = 1f;
 
-            Vector3 cameraPosition = cameraTransform.localPosition;
-            cameraPosition.y = Mathf.Lerp(cameraPosition.y, normalCameraHeight, Time.deltaTime * cameraTransitionSpeed);
-            cameraTransform.localPosition = cameraPosition;
-        }
+                Vector3 cameraPosition = cameraTransform.localPosition;
+                cameraPosition.y = Mathf.Lerp(cameraPosition.y, normalCameraHeight, Time.deltaTime * cameraTransitionSpeed);
+                cameraTransform.localPosition = cameraPosition;
+            }
 
-        rb.velocity = new Vector3(moveDirection.x * currentSpeed, rb.velocity.y, moveDirection.z * currentSpeed);
+            rb.velocity = new Vector3(moveDirection.x * currentSpeed, rb.velocity.y, moveDirection.z * currentSpeed);
 
-        staminaBar.value = currentStamina;
+            stamBar.value = currentStamina;
 
-        // Mouse rotation
-        float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
-        mouseY += Input.GetAxis("Mouse Y") * rotationSpeed;
-        mouseY = Mathf.Clamp(mouseY, -viewRange, viewRange);
+            // Mouse rotation
+            float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
+            mouseY += Input.GetAxis("Mouse Y") * rotationSpeed;
+            mouseY = Mathf.Clamp(mouseY, -viewRange, viewRange);
 
-        transform.Rotate(Vector3.up * mouseX);
-        Camera.main.transform.localRotation = Quaternion.Euler(-mouseY, 0f, 0f);
+            transform.Rotate(Vector3.up * mouseX);
+            Camera.main.transform.localRotation = Quaternion.Euler(-mouseY, 0f, 0f);
 
-        // Jumping
-        if (Input.GetButtonDown("Jump") && currentStamina >= 10 && IsGrounded())
-        {
-            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
-            currentStamina -= 10;
+            // Jumping
+            if (Input.GetButtonDown("Jump") && currentStamina >= 10 && IsGrounded())
+            {
+                rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+                currentStamina -= 10;
 
-            // Spawn attraction object for jumping
-            SpawnAttractionObject(jumpAttractionDistance);
+                // Spawn attraction object for jumping
+                SpawnAttractionObject(jumpAttractionDistance);
+            }
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    /*private void OnCollisionEnter(Collision collision)
     {
-        // Find all enemies in the scene (You can replace this with your actual way of finding enemies)
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-
-        List<IEnemy> enemiesInBattle = new List<IEnemy>();
-
-        // Loop through all enemies
-        foreach (GameObject enemyObject in enemies)
+        // Check if the object collided with has the "Enemy" tag
+        if (collision.gameObject.CompareTag("Enemy"))
         {
-            IEnemy enemy = enemyObject.GetComponent<IEnemy>();
+            Debug.Log($"Collision with enemy: {collision.gameObject.name}");
 
-            // Check if the enemy has the IEnemy component and is in the "chasing" state
-            if (enemy != null && enemy.getCurrentState() == "Chasing")
+            // Find all enemies in the scene
+            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            Debug.Log($"Number of enemies found: {enemies.Length}");
+
+            // Create a list to store enemies that can enter the battle
+            List<IEnemy> enemiesInBattle = new List<IEnemy>();
+
+            // Loop through all enemies and check their state
+            foreach (GameObject enemyObject in enemies)
             {
-                // Check if the enemy is within 10 units of the player
-                float distanceToPlayer = Vector3.Distance(enemyObject.transform.position, transform.position); // Assuming `transform.position` is the player's position
+                IEnemy enemy = enemyObject.GetComponent<IEnemy>();
 
-                if (distanceToPlayer < 10f)
+                if (enemy != null)
                 {
-                    // Add the enemy to the list
-                    enemiesInBattle.Add(enemy);
+                    Debug.Log($"Enemy: {enemyObject.name}, State: {enemy.getCurrentState()}");
 
-                    // Log the enemy's state in the console
-                    Debug.Log($"Enemy {enemyObject.name} with state: {enemy.getCurrentState()} is entering the battle.");
-                }
-            }
-        }
-
-        // If any enemies were found, start the battle
-        if (enemiesInBattle.Count > 0)
-        {
-            if (GameManager.BattleCanvas != null)
-            {
-                GameManager.BattleCanvas.SetActive(true);
-
-                // Find the InfoText component inside the BattleCanvas
-                TMPro.TextMeshProUGUI infoText = GameManager.BattleCanvas.transform
-                    .Find("Panel/InfoText")
-                    .GetComponent<TMPro.TextMeshProUGUI>();
-
-                if (infoText != null)
-                {
-                    // Prepare the battle info message
-                    string battleInfo = "Enemies in Battle:\n";
-                    foreach (IEnemy enemy in enemiesInBattle)
+                    // Check if the enemy is in the "Chasing" state
+                    if (enemy.getCurrentState() == "Chasing")
                     {
-                        GameObject enemyObject = (enemy as MonoBehaviour)?.gameObject; // Get the GameObject associated with the enemy
-                        if (enemyObject != null)
+                        // Check if the enemy is within 10 units of the player
+                        float distanceToPlayer = Vector3.Distance(enemyObject.transform.position, transform.position);
+
+
+                        // Log the player's and enemy's positions
+                        Vector3 playerPosition = transform.position;
+                        Vector3 enemyPosition = enemyObject.transform.position;
+
+                        Debug.Log($"Player Position: (X: {playerPosition.x}, Y: {playerPosition.y}, Z: {playerPosition.z})");
+                        Debug.Log($"Enemy Position: (X: {enemyPosition.x}, Y: {enemyPosition.y}, Z: {enemyPosition.z})");
+
+                        Debug.Log($"Distance to {enemyObject.name}: {distanceToPlayer}");
+
+                        if (distanceToPlayer < 10f)
                         {
-                            HealthManager healthManager = enemyObject.GetComponent<HealthManager>();
-                            if (healthManager != null)
-                            {
-                                float currentHealth = healthManager.CurrentHealth;
-                                battleInfo += $"- {enemy.GetType().Name} (State: {enemy.getCurrentState()}, Health: {currentHealth}/{healthManager.maxHealth})\n";
-                            }
-                            else
-                            {
-                                battleInfo += $"- {enemy.GetType().Name} (State: {enemy.getCurrentState()}, Health: Unknown)\n";
-                            }
-                        }
-                        else
-                        {
-                            battleInfo += $"- {enemy.GetType().Name} (State: {enemy.getCurrentState()}, Health: Unknown)\n";
+                            // Add the enemy to the list
+                            enemiesInBattle.Add(enemy);
+                            Debug.Log($"Enemy {enemyObject.name} added to battle list.");
                         }
                     }
-
-                    // Update the InfoText with the battle info
-                    infoText.text = battleInfo;
-                    Debug.Log("Battle info updated in InfoText!");
                 }
                 else
                 {
-                    Debug.LogWarning("InfoText component not found in the BattleCanvas!");
+                    Debug.LogWarning($"Enemy {enemyObject.name} does not have IEnemy component.");
                 }
             }
+
+            // If any enemies were found, start the battle
+            if (enemiesInBattle.Count > 0)
+            {
+                Debug.Log("Starting battle...");
+
+                if (GameManager.BattleCanvas != null)
+                {
+                    GameManager.BattleCanvas.SetActive(true);
+
+                    // Find the InfoText component inside the BattleCanvas
+                    TMPro.TextMeshProUGUI infoText = GameManager.BattleCanvas.transform
+                        .Find("Panel/InfoText")
+                        .GetComponent<TMPro.TextMeshProUGUI>();
+
+                    if (infoText != null)
+                    {
+                        // Prepare the battle info message
+                        string battleInfo = "Enemies in Battle:\n";
+                        foreach (IEnemy battleEnemy in enemiesInBattle)
+                        {
+                            GameObject enemyObject = (battleEnemy as MonoBehaviour)?.gameObject;
+
+                            if (enemyObject != null)
+                            {
+                                HealthManager healthManager = enemyObject.GetComponent<HealthManager>();
+                                if (healthManager != null)
+                                {
+                                    float currentHealth = healthManager.CurrentHealth;
+                                    battleInfo += $"- {battleEnemy.GetType().Name} (State: {battleEnemy.getCurrentState()}, Health: {currentHealth}/{healthManager.maxHealth})\n";
+                                }
+                                else
+                                {
+                                    battleInfo += $"- {battleEnemy.GetType().Name} (State: {battleEnemy.getCurrentState()}, Health: Unknown)\n";
+                                }
+                            }
+                        }
+
+                        // Update the InfoText with the battle info
+                        infoText.text = battleInfo;
+                        Debug.Log("Battle info updated in InfoText!");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("InfoText component not found in the BattleCanvas!");
+                    }
+                }
+            }
+            else
+            {
+                Debug.Log("No enemies which could enter battle.");
+            }
         }
-        else
+    }*/
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
         {
-            Debug.Log("no enemies which could enter battle");
+            Debug.Log($"Collision with enemy: {collision.gameObject.name}");
+
+            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            List<IEnemy> enemiesInBattle = new List<IEnemy>();
+
+            foreach (GameObject enemyObject in enemies)
+            {
+                IEnemy enemy = enemyObject.GetComponent<IEnemy>();
+                if (enemy != null && enemy.getCurrentState() == "Chasing")
+                {
+                    float distanceToPlayer = Vector3.Distance(enemyObject.transform.position, transform.position);
+                    if (distanceToPlayer < 10f)
+                    {
+                        enemiesInBattle.Add(enemy);
+                    }
+                }
+            }
+
+            if (enemiesInBattle.Count > 0 && battleManager != null)
+            {
+                float currentPlayerHealth = playerHealthManager.getCurrentHealth();
+                battleManager.StartBattle(enemiesInBattle, currentPlayerHealth, currentStamina);
+                Debug.Log("Battle started.");
+            }
+            else
+            {
+                Debug.Log("No enemies eligible for battle.");
+            }
         }
     }
 
