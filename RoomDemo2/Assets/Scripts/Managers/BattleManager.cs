@@ -20,18 +20,29 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private Slider playerStaminaSlider;
 
     [SerializeField] private List<Image> enemyImages; // Predefined UI image slots (Enemy1, ..., Enemy5)
+    [SerializeField] private Image targetedEnemyBorder;
+
     [SerializeField] private Sprite enemySprite; // Default sprite for enemies with NavigationScript
     [SerializeField] private Sprite guardSprite; // Default sprite for enemies without NavigationScript
     [SerializeField] private GameObject enemyHealthPrefab; // Prefab for "enemyhealth" gameobject with slider setup
 
     private List<GameObject> activeEnemyHealthUI = new List<GameObject>(); // Track active health bars
     private List<HealthManager> enemyHealthManagers = new List<HealthManager>(); // Track enemy health managers
+    private List<EnemyDamageManager> enemyDamageManagers = new List<EnemyDamageManager>(); //track enemy damage managers
     [SerializeField] private PlayerHealth playerHealthManager; // Track player health manager
+
+    //FOR ENEMY TARGETING
+    private int targetedEnemyIndex = -1;
+    private int enemyToBeTargeted = -1;
 
     public void StartBattle(List<IEnemy> enemies, float playerHealth, float playerStamina)
     {
         gameOverText.gameObject.SetActive(false);
         enemyHealthManagers.Clear();
+        enemyDamageManagers.Clear();
+
+        targetedEnemyIndex = 0; // Select the first enemy
+        //UpdateBorderPosition(targetedEnemyIndex);
 
         if (battleCanvas == null || enemyImages == null || enemyImages.Count == 0 || enemyHealthPrefab == null)
         {
@@ -95,6 +106,35 @@ public class BattleManager : MonoBehaviour
                         Debug.LogWarning($"Enemy {i + 1} does not have a HealthManager component.");
                     }
 
+                    // Add the enemy's DamageManagers to the list
+                    EnemyDamageManager enemyDamageManager = enemyObject.GetComponent<EnemyDamageManager>();
+                    if (enemyDamageManager != null)
+                    {
+                        enemyDamageManagers.Add(enemyDamageManager); // Populate enemyHealthManagers
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Enemy {i + 1} does not have a EnemyDamageManager component.");
+                    }
+
+
+                    Transform buttonTransform = enemyImageSlot.transform.Find("SelectButton");
+                    Button button = buttonTransform?.GetComponent<Button>();
+
+                    if (button != null)
+                    {
+                        button.onClick.RemoveAllListeners();
+
+                        // Pass the correct index via a lambda expression to ensure the correct index is captured
+                        int capturedIndex = i; // Capture the current value of i in a local variable
+                        button.onClick.AddListener(() => SelectTargetEnemy(capturedIndex)); // Use capturedIndex
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Button not found for enemy image slot {i}.");
+                    }
+
+
                     // Configure slider
                     Slider healthSlider = healthUI.GetComponent<Slider>();
                     if (healthSlider != null)
@@ -112,6 +152,7 @@ public class BattleManager : MonoBehaviour
                             healthSlider.fillRect = fillImage.rectTransform;
                         }
 
+
                         // Set enemy name and health info text
                         TextMeshProUGUI healthInfoText = healthUI.GetComponentInChildren<TextMeshProUGUI>();
                         if (healthInfoText != null)
@@ -123,6 +164,8 @@ public class BattleManager : MonoBehaviour
                 }
             }
         }
+
+
 
         // Deactivate unused enemy image slots
         for (int i = enemyCount; i < enemyImages.Count; i++)
@@ -171,10 +214,12 @@ public class BattleManager : MonoBehaviour
         // Process enemies first
         Debug.Log("enemies remaining:" + enemyHealthManagers.Count);
 
-        for (int i = 0; i < enemyHealthManagers.Count; i++)
+
+        //decrease health for every enemy (area damage attacks)
+/*        for (int i = 0; i < enemyHealthManagers.Count; i++)
         {
             HealthManager enemyHealth = enemyHealthManagers[i];
-            Debug.Log("enemy nr. "+ i+ ", health="+ enemyHealth);
+            Debug.Log("enemy nr. " + i + ", health=" + enemyHealth);
             if (enemyHealth != null)
             {
                 Debug.Log($"Processing enemy {i + 1}/{enemyHealthManagers.Count} with initial health: {enemyHealth.CurrentHealth}");
@@ -198,53 +243,156 @@ public class BattleManager : MonoBehaviour
                     TextMeshProUGUI healthInfoText = activeEnemyHealthUI[i].GetComponentInChildren<TextMeshProUGUI>();
                     if (healthInfoText != null)
                     {
-                        healthInfoText.text = $"{enemyHealth.CurrentHealth}/{enemyHealth.maxHealth}";
+                        // Preserve the enemy name by splitting the current text if necessary
+                        string[] lines = healthInfoText.text.Split('\n');
+                        string enemyName = lines.Length > 0 ? lines[0] : "Unknown";
+
+                        // Update the text while keeping the enemy name
+                        healthInfoText.text = $"{enemyName}\n{Mathf.RoundToInt(enemyHealth.CurrentHealth)}/{Mathf.RoundToInt(enemyHealth.maxHealth)}";
                         Debug.Log($"Enemy {i + 1} UI health text updated to: {healthInfoText.text}");
                     }
                 }
 
                 // Wait a few seconds
                 yield return new WaitForSeconds(2f);
+
+                // Check if the enemy has been removed or is null
+                if (enemyHealth == null)
+                {
+                    Debug.Log($"Enemy {i + 1} has been defeated. Deactivating UI.");
+
+                    // Deactivate the UI components for the defeated enemy
+                    if (activeEnemyHealthUI[i] != null)
+                    {
+                        activeEnemyHealthUI[i].SetActive(false); // Disable the health slider
+                    }
+
+                    if (enemyImages[i] != null)
+                    {
+                        enemyImages[i].gameObject.SetActive(false); // Disable the enemy image
+                    }
+                    yield return new WaitForSeconds(1f);
+                }
+
             }
             else
             {
                 Debug.LogWarning($"Enemy {i + 1} does not have a valid HealthManager component.");
             }
         }
+*/
 
+
+        HealthManager enemyHealth = enemyHealthManagers[targetedEnemyIndex];
+        Debug.Log("enemy nr. " + targetedEnemyIndex + ", health=" + enemyHealth);
+        if (enemyHealth != null)
+        {
+            Debug.Log($"Processing enemy {targetedEnemyIndex + 1}/{enemyHealthManagers.Count} with initial health: {enemyHealth.CurrentHealth}");
+
+            // Decrease health using the method
+
+            enemyHealth.DecreaseHealth(60);
+            Debug.Log($"Enemy {targetedEnemyIndex + 1} health decreased. Current health: {enemyHealth.CurrentHealth}");
+
+            // Update UI slider
+            if (activeEnemyHealthUI[targetedEnemyIndex] != null)
+            {
+                Slider healthSlider = activeEnemyHealthUI[targetedEnemyIndex].GetComponent<Slider>();
+                if (healthSlider != null)
+                {
+                    healthSlider.value = enemyHealth.CurrentHealth;
+                    Debug.Log($"Enemy {targetedEnemyIndex + 1} UI health slider updated to: {healthSlider.value}");
+                }
+
+                // Update info text
+                TextMeshProUGUI healthInfoText = activeEnemyHealthUI[targetedEnemyIndex].GetComponentInChildren<TextMeshProUGUI>();
+                if (healthInfoText != null)
+                {
+                    // Preserve the enemy name by splitting the current text if necessary
+                    string[] lines = healthInfoText.text.Split('\n');
+                    string enemyName = lines.Length > 0 ? lines[0] : "Unknown";
+
+                    // Update the text while keeping the enemy name
+                    healthInfoText.text = $"{enemyName}\n{Mathf.RoundToInt(enemyHealth.CurrentHealth)}/{Mathf.RoundToInt(enemyHealth.maxHealth)}";
+                    Debug.Log($"Enemy {targetedEnemyIndex + 1} UI health text updated to: {healthInfoText.text}");
+                }
+            }
+
+            // Wait a few seconds
+            yield return new WaitForSeconds(2f);
+
+            // Check if the enemy has been removed or is null
+            if (enemyHealth == null)
+            {
+                enemyDamageManagers.RemoveAt(targetedEnemyIndex);
+
+
+                Debug.Log($"Enemy {targetedEnemyIndex + 1} has been defeated. Deactivating UI.");
+
+                SelectNextNonNullEnemy();
+
+                // Deactivate the UI components for the defeated enemy
+                if (activeEnemyHealthUI[targetedEnemyIndex] != null)
+                {
+                    activeEnemyHealthUI[targetedEnemyIndex].SetActive(false); // Disable the health slider
+                }
+
+                if (enemyImages[targetedEnemyIndex] != null)
+                {
+                    enemyImages[targetedEnemyIndex].gameObject.SetActive(false); // Disable the enemy image
+                }
+                yield return new WaitForSeconds(1f);
+                targetedEnemyIndex = enemyToBeTargeted;
+            }
+
+        }
+        else
+        {
+            Debug.LogWarning($"Enemy {targetedEnemyIndex + 1} does not have a valid HealthManager component.");
+        }
+
+        bool playerAlive = true;
         // Process player health
         if (playerHealthManager != null)
         {
             Debug.Log($"Processing player health with initial health: {playerHealthManager.getCurrentHealth()}");
 
-            playerHealthManager.DecreaseHealth(10);
-            Debug.Log($"Player health decreased. Current health: {playerHealthManager.getCurrentHealth()}");
 
-            // Update player health UI
-            if (playerHealthSlider != null)
+            for(int i= 0; i < enemyDamageManagers.Count; i++)
             {
-                playerHealthSlider.value = playerHealthManager.getCurrentHealth();
-                Debug.Log($"Player health slider updated to: {playerHealthSlider.value}");
+                int currentdamage = Mathf.RoundToInt(Random.Range(enemyDamageManagers[i].getMinDamage, enemyDamageManagers[i].getMaxDamage));
+                Debug.Log("calculated enemy damage: " + currentdamage);
+                playerHealthManager.DecreaseHealth(currentdamage);
+                Debug.Log($"Player health decreased. Current health: {playerHealthManager.getCurrentHealth()}");
+                // Update player health UI
+                if (playerHealthSlider != null)
+                {
+                    playerHealthSlider.value = playerHealthManager.getCurrentHealth();
+                    Debug.Log($"Player health slider updated to: {playerHealthSlider.value}");
+                }
+
+                if (playerHealthText != null)
+                {
+                    playerHealthText.text = $"{playerHealthManager.getCurrentHealth()}/100";
+                    Debug.Log($"Player health text updated to: {playerHealthText.text}");
+                }
+
+                // Wait for player health animation (future feature)
+                yield return new WaitForSeconds(2f);
+
+                if (playerHealthManager.getCurrentHealth() <= 0)
+                {
+                    playerAlive= false;
+                    StartCoroutine(HandleGameOver());
+                }
             }
 
-            if (playerHealthText != null)
-            {
-                playerHealthText.text = $"{playerHealthManager.getCurrentHealth()}/100";
-                Debug.Log($"Player health text updated to: {playerHealthText.text}");
-            }
-
-            // Wait for player health animation (future feature)
-            yield return new WaitForSeconds(2f);
-
-            if (playerHealthManager.getCurrentHealth() <= 0)
-            {
-                StartCoroutine(HandleGameOver());
-            }
         }
         else
         {
             Debug.LogWarning("PlayerHealthManager is null. Skipping player health processing.");
         }
+
 
         int nullCount = 0;
         foreach (var eHealth in enemyHealthManagers)
@@ -256,21 +404,26 @@ public class BattleManager : MonoBehaviour
         }
 
         // Check if all enemies have null health
-        Debug.Log("!!!!      " + nullCount + "?" + enemyHealthManagers.Count);
-        if (nullCount == enemyHealthManagers.Count)
+       // Debug.Log("!!!!      " + nullCount + "?" + enemyHealthManagers.Count);
+        if (nullCount == enemyHealthManagers.Count && playerAlive)
         {
             EndBattle(); // Call your EndBattle method if all enemies are defeated
+        }
+
+        Debug.Log(playerAlive);
+        if (playerAlive)
+        {
+            foreach (Button btn in gameButtons)
+            {
+                btn.interactable = true;
+                btn.gameObject.SetActive(true);
+            }
         }
 
         // Update info text for the next turn
         infoText.text = "Turn ended. Prepare for the next move!";
         Debug.Log("End-turn sequence complete. Info text updated.");
 
-        foreach (Button btn in gameButtons)
-        {
-            btn.interactable = true;
-            btn.gameObject.SetActive(true);
-        }
     }
 
     IEnumerator HandleGameOver()
@@ -313,5 +466,60 @@ public class BattleManager : MonoBehaviour
             Destroy(healthUI);
         }
         activeEnemyHealthUI.Clear();
+    }
+
+    private void UpdateBorderPosition(int index)
+    {
+        if (index >= 0 && index < enemyImages.Count)
+        {
+            // Move the border to the selected enemy's position using the RectTransform of the image
+            RectTransform enemyImageRectTransform = enemyImages[index].rectTransform;
+            targetedEnemyBorder.GetComponent<RectTransform>().position = enemyImageRectTransform.position;
+
+            // Make sure the border is visible
+            //targetedEnemyBorder.SetActive(true);  // Ensure the border is active
+        }
+    }
+
+    private void SelectNextNonNullEnemy()
+    {
+        // Loop through the enemyHealthManagers to find the first non-null enemy
+        for (int i = 0; i < enemyHealthManagers.Count; i++)
+        {
+            if (enemyHealthManagers[i] != null)
+            {
+                // Once a non-null enemy is found, update the border position and break the loop
+                enemyToBeTargeted = i;
+                UpdateBorderPosition(i);
+                break; // Exit the loop once the first valid enemy is found
+            }
+        }
+    }
+
+
+    private void SelectTargetEnemy(int index)
+    {
+        Debug.Log($"SelectTargetEnemy called with index: {index}");
+        Debug.Log($"enemyHealthManagers.Count: {enemyHealthManagers.Count}");
+
+        // Check if index is within range
+        if (index < 0 || index >= enemyHealthManagers.Count)
+        {
+            Debug.LogWarning("Index is out of range. Check if the button is linked to the correct enemy.");
+            return;
+        }
+
+        // Check if the enemyHealthManager at the index is null
+        if (enemyHealthManagers[index] == null)
+        {
+            Debug.LogWarning($"EnemyHealthManager at index {index} is null. Ensure it is properly assigned.");
+            return;
+        }
+
+        // If everything is valid, select the enemy
+        targetedEnemyIndex = index;
+        UpdateBorderPosition(index); // Update UI to show selected target
+        infoText.text = $"Targeted Enemy {index + 1}: {enemyHealthManagers[index].CurrentHealth}/{enemyHealthManagers[index].maxHealth} HP";
+        Debug.Log($"Enemy {index + 1} selected as target.");
     }
 }

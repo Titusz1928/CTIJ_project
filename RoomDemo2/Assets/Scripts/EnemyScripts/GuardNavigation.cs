@@ -11,6 +11,9 @@ public class GuardNavigation : MonoBehaviour, IEnemy
     public float MinPossibleHealth => 100f;
     public float MaxPossibleHealth => 125f;
 
+    public float MinPossibleDamage => 15f; // Minimum possible damage
+    public float MaxPossibleDamage => 30f;
+
     // State variables
     private enum EnemyState { Guarding, Searching, Chasing }
     private EnemyState currentState = EnemyState.Guarding;

@@ -6,5 +6,7 @@ public interface IEnemy
 {
     float MinPossibleHealth { get; }
     float MaxPossibleHealth { get; }
+    float MinPossibleDamage { get; }
+    float MaxPossibleDamage { get; }
     string getCurrentState();
 }
