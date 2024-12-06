@@ -28,7 +28,9 @@ public class BattleManager : MonoBehaviour
 
     private List<GameObject> activeEnemyHealthUI = new List<GameObject>(); // Track active health bars
     private List<HealthManager> enemyHealthManagers = new List<HealthManager>(); // Track enemy health managers
-    private List<EnemyDamageManager> enemyDamageManagers = new List<EnemyDamageManager>(); //track enemy damage managers
+    //private List<EnemyDamageManager> enemyDamageManagers = new List<EnemyDamageManager>(); //track enemy damage managers
+    private Dictionary<int, EnemyDamageManager> enemyDamageManagersMap = new Dictionary<int, EnemyDamageManager>();
+
     [SerializeField] private PlayerHealth playerHealthManager; // Track player health manager
 
     //FOR ENEMY TARGETING
@@ -39,7 +41,7 @@ public class BattleManager : MonoBehaviour
     {
         gameOverText.gameObject.SetActive(false);
         enemyHealthManagers.Clear();
-        enemyDamageManagers.Clear();
+        enemyDamageManagersMap.Clear();
 
         targetedEnemyIndex = 0; // Select the first enemy
         //UpdateBorderPosition(targetedEnemyIndex);
@@ -110,7 +112,10 @@ public class BattleManager : MonoBehaviour
                     EnemyDamageManager enemyDamageManager = enemyObject.GetComponent<EnemyDamageManager>();
                     if (enemyDamageManager != null)
                     {
-                        enemyDamageManagers.Add(enemyDamageManager); // Populate enemyHealthManagers
+                        // Assign a unique index or ID to each enemy
+                        int customIndex = enemyDamageManagersMap.Count; // or use a unique ID
+                        enemyDamageManagersMap.Add(customIndex, enemyDamageManager);
+                        // Populate other lists or structures as necessary
                     }
                     else
                     {
@@ -324,7 +329,35 @@ public class BattleManager : MonoBehaviour
             // Check if the enemy has been removed or is null
             if (enemyHealth == null)
             {
-                enemyDamageManagers.RemoveAt(targetedEnemyIndex);
+
+
+
+                int realIndex = -1;
+                int i = 0;
+                //Debug.LogWarning("enemies:");
+                foreach (var pair in enemyDamageManagersMap)
+                {
+                    i++;
+                    //Debug.LogWarning("custom index"+pair.Key +"   , real index"+i);
+                    if (pair.Key == targetedEnemyIndex)
+                    {
+                        realIndex = pair.Key;  // The key is the real index
+                        break;
+                    }
+                }
+
+
+                if (realIndex != -1)
+                {
+                    // Remove the enemy DamageManager using the real index (custom index)
+                    enemyDamageManagersMap.Remove(realIndex);
+                    Debug.Log($"Enemy with custom index {realIndex} has been defeated.");
+                }
+                else
+                {
+                    Debug.LogError($"Enemy with custom index {targetedEnemyIndex} not found.");
+                }
+
 
 
                 Debug.Log($"Enemy {targetedEnemyIndex + 1} has been defeated. Deactivating UI.");
@@ -358,9 +391,13 @@ public class BattleManager : MonoBehaviour
             Debug.Log($"Processing player health with initial health: {playerHealthManager.getCurrentHealth()}");
 
 
-            for(int i= 0; i < enemyDamageManagers.Count; i++)
+            foreach (var enemyDamageManagerPair in enemyDamageManagersMap)
             {
-                int currentdamage = Mathf.RoundToInt(Random.Range(enemyDamageManagers[i].getMinDamage, enemyDamageManagers[i].getMaxDamage));
+                int customIndex = enemyDamageManagerPair.Key; // Get the custom index
+                //Debug.LogWarning("player will take damage from customindex:"+ customIndex);
+                EnemyDamageManager damageManager = enemyDamageManagerPair.Value; // Get the corresponding EnemyDamageManager
+
+                int currentdamage = Mathf.RoundToInt(Random.Range(damageManager.getMinDamage, damageManager.getMaxDamage));
                 Debug.Log("calculated enemy damage: " + currentdamage);
                 playerHealthManager.DecreaseHealth(currentdamage);
                 Debug.Log($"Player health decreased. Current health: {playerHealthManager.getCurrentHealth()}");

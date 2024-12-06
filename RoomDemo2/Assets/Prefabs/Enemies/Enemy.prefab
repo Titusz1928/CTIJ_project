@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Enemy
+  m_text: 'Soldier
 
 '
   m_isRightToLeft: 0
@@ -609,7 +609,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c3cf00645f671d642b544913acc6a3b9, type: 2}
+  - {fileID: 2100000, guid: 3db1939117b9ddf49a408933bc6dc316, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

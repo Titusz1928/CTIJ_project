@@ -7,6 +7,7 @@ using UnityEngine;
 public class MapGenerator : MonoBehaviour
 {
     public GameObject roomPrefab; // Assign the Room prefab in the Inspector
+    public GameObject floorTexturePrefab;
     public GameObject chestPrefab; // Assign the Chest prefab in the Inspector
     public GameObject guardEnemyPrefab;
 
@@ -32,6 +33,10 @@ public class MapGenerator : MonoBehaviour
                 // Instantiate the room prefab
                 GameObject room = Instantiate(roomPrefab, position, Quaternion.identity, transform);
 
+                CreateFloorTexture(position);
+
+                CreateCeilingTexture(position);
+
                 // Tag walls and add mesh colliders
                 TagWalls(room);
                 AddMeshCollidersToWalls(room);
@@ -40,6 +45,25 @@ public class MapGenerator : MonoBehaviour
                 TryGenerateChest(room);
             }
         }
+    }
+
+    void CreateFloorTexture(Vector3 roomPosition)
+    {
+        // Adjust the floor texture position to ensure Y is 0.1
+        Vector3 floorPosition = new Vector3(roomPosition.x-10, 0.1f, roomPosition.z);
+
+        // Instantiate the floor texture prefab
+        Instantiate(floorTexturePrefab, floorPosition, Quaternion.identity, transform);
+    }
+
+    void CreateCeilingTexture(Vector3 roomPosition)
+    {
+        // Adjust the ceiling texture position to ensure Y is 5.9
+        Vector3 ceilingPosition = new Vector3(roomPosition.x - 10, 5.9f, roomPosition.z);
+
+        // Instantiate the ceiling texture prefab with a 180-degree rotation on the X-axis
+        Quaternion ceilingRotation = Quaternion.Euler(180, 0, 0);
+        Instantiate(floorTexturePrefab, ceilingPosition, ceilingRotation, transform);
     }
 
     void BakeNavMesh()

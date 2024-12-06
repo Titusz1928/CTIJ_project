@@ -5811,7 +5811,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20b0e232a715c1d4cb534d3cb24dbccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomPrefab: {fileID: 919132149155446097, guid: 023bfdf4b9e545d48a27b1b0e04c7d6c, type: 3}
+  roomPrefab: {fileID: 6693484406716031914, guid: 03e0b2b4c92e6814ca6b125622503fdc, type: 3}
+  floorTexturePrefab: {fileID: 6381469239386729759, guid: a92561df674e0bd45a8d43d4ae974637, type: 3}
   chestPrefab: {fileID: 3194187008177304943, guid: d6ecbd87882825546b0904a920c42869, type: 3}
   guardEnemyPrefab: {fileID: 5178526324287532479, guid: 23e18fb4088982141af360659da9b1f0, type: 3}
   gridRows: 5
