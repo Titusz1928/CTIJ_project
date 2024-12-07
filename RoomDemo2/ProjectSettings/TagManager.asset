@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - AttractionObject
   - Chest
+  - Pickable
   layers:
   - Default
   - TransparentFX
@@ -15,7 +16,7 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
+  - PickableObjects
   - 
   - 
   - 

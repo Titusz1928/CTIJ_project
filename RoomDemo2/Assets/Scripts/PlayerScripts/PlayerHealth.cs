@@ -56,6 +56,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void IncreaseHealth(int amount)
     {
+        
         currentHealth += amount;
 
         // Clamp health to a maximum of maxHealth

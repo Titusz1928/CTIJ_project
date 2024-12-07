@@ -11,6 +11,11 @@ public class MapGenerator : MonoBehaviour
     public GameObject chestPrefab; // Assign the Chest prefab in the Inspector
     public GameObject guardEnemyPrefab;
 
+    public GameObject herb1Prefab; // Healing herb prefab
+    public GameObject herb2Prefab;
+
+    public GameObject player;
+
     public int gridRows = 5;
     public int gridCols = 5;
     public float roomSize = 20f; // Adjust based on the prefab's size
@@ -43,6 +48,8 @@ public class MapGenerator : MonoBehaviour
 
                 // Attempt to generate a chest with a 10% chance
                 TryGenerateChest(room);
+
+                TryGenerateHerbs(room);
             }
         }
     }
@@ -160,6 +167,31 @@ public class MapGenerator : MonoBehaviour
                 Debug.LogWarning("GuardNavigation script not found on guard enemy prefab!");
             }
 
+        }
+    }
+
+    void TryGenerateHerbs(GameObject room)
+    {
+        float chance = Random.Range(0f, 1f); // Generate a random number between 0 and 1
+        if (chance <= 0.1f) // 10% chance to spawn a herb
+        {
+            GameObject herb = Instantiate(herb1Prefab, room.transform.position + new Vector3(3, -2.9f, 3), Quaternion.identity, room.transform);
+
+            // Ensure HerbAction component is attached to the herb prefab
+            HerbAction herbAction = herb.GetComponent<HerbAction>();
+            if (herbAction != null)
+            {
+                // Assign the player health reference to the HerbAction component
+                herbAction.playerhealth = player.GetComponent<PlayerHealth>();  // Assign player health reference
+                herbAction.replacementPrefab = herb2Prefab;  // Assign the replacement prefab (Herb2)
+            }
+            else
+            {
+                Debug.LogError("HerbAction component not found on herb1Prefab!");
+            }
+
+            // Optional: Log herb generation
+            Debug.Log($"Herb1 generated at {herb.transform.position}. It will heal the player.");
         }
     }
 

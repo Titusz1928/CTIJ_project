@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System;
 
 public class BattleManager : MonoBehaviour
 {
@@ -397,7 +398,7 @@ public class BattleManager : MonoBehaviour
                 //Debug.LogWarning("player will take damage from customindex:"+ customIndex);
                 EnemyDamageManager damageManager = enemyDamageManagerPair.Value; // Get the corresponding EnemyDamageManager
 
-                int currentdamage = Mathf.RoundToInt(Random.Range(damageManager.getMinDamage, damageManager.getMaxDamage));
+                int currentdamage = Mathf.RoundToInt(UnityEngine.Random.Range(damageManager.getMinDamage, damageManager.getMaxDamage));
                 Debug.Log("calculated enemy damage: " + currentdamage);
                 playerHealthManager.DecreaseHealth(currentdamage);
                 Debug.Log($"Player health decreased. Current health: {playerHealthManager.getCurrentHealth()}");
@@ -490,6 +491,9 @@ public class BattleManager : MonoBehaviour
         {
             battleCanvas.SetActive(false);
         }
+
+        RectTransform enemyImageRectTransform = enemyImages[0].rectTransform;
+        targetedEnemyBorder.GetComponent<RectTransform>().position = enemyImageRectTransform.position;
 
         // Deactivate all enemy image slots
         foreach (Image image in enemyImages)
