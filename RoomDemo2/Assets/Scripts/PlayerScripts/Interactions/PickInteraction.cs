@@ -38,10 +38,19 @@ public class PickInteraction : MonoBehaviour
                 // Check for the interaction key
                 if (Input.GetKeyDown(KeyCode.E))
                 {
-                    // Perform the action assigned to this pickable object
+                    // Get the PickableAction component from the hit object
+                    var pickableActionComponent = hit.collider.GetComponent<PickableAction>();
+
+                    // Check if the object has a PickableAction component
+                    if (pickableActionComponent != null)
+                    {
+                        SetPickableAction(pickableActionComponent);
+                    }
+
+                    // Execute the action if available
                     if (pickableAction != null)
                     {
-                        pickableAction.ExecuteAction(hit.collider.gameObject); // Execute the specific action for this object
+                        pickableAction.ExecuteAction(hit.collider.gameObject);
                     }
                 }
             }

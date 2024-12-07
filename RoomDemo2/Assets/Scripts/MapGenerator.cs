@@ -13,6 +13,7 @@ public class MapGenerator : MonoBehaviour
 
     public GameObject herb1Prefab; // Healing herb prefab
     public GameObject herb2Prefab;
+    public GameObject stonePrefab;
 
     public GameObject player;
 
@@ -50,6 +51,8 @@ public class MapGenerator : MonoBehaviour
                 TryGenerateChest(room);
 
                 TryGenerateHerbs(room);
+
+                TryGenerateStone(room);
             }
         }
     }
@@ -173,25 +176,57 @@ public class MapGenerator : MonoBehaviour
     void TryGenerateHerbs(GameObject room)
     {
         float chance = Random.Range(0f, 1f); // Generate a random number between 0 and 1
-        if (chance <= 0.1f) // 10% chance to spawn a herb
+        if (chance <= 0.4f) // 40% chance to spawn a herb
         {
-            GameObject herb = Instantiate(herb1Prefab, room.transform.position + new Vector3(3, -2.9f, 3), Quaternion.identity, room.transform);
+            float x = Random.Range(0f, 16f);
+            float z = Random.Range(0f, 16f);
+            float herbState = Random.Range(0f, 2f);
 
-            // Ensure HerbAction component is attached to the herb prefab
-            HerbAction herbAction = herb.GetComponent<HerbAction>();
-            if (herbAction != null)
+            if (herbState > 1f)
             {
-                // Assign the player health reference to the HerbAction component
-                herbAction.playerhealth = player.GetComponent<PlayerHealth>();  // Assign player health reference
-                herbAction.replacementPrefab = herb2Prefab;  // Assign the replacement prefab (Herb2)
+                GameObject herb = Instantiate(herb1Prefab, room.transform.position + new Vector3(x, -2.9f, z), Quaternion.identity, room.transform);
+
+                // Ensure HerbAction component is attached to the herb prefab
+                HerbAction herbAction = herb.GetComponent<HerbAction>();
+                if (herbAction != null)
+                {
+                    // Assign the player health reference to the HerbAction component
+                    herbAction.playerhealth = player.GetComponent<PlayerHealth>();  // Assign player health reference
+                    herbAction.replacementPrefab = herb2Prefab;  // Assign the replacement prefab (Herb2)
+                }
+                else
+                {
+                    Debug.LogError("HerbAction component not found on herb1Prefab!");
+                }
+
+                // Optional: Log herb generation
+                Debug.Log($"Herb1 generated at {herb.transform.position}. It will heal the player.");
             }
             else
             {
-                Debug.LogError("HerbAction component not found on herb1Prefab!");
+                // Create a Quaternion for 180 degrees rotation on the Y axis
+                Quaternion rotation = Quaternion.Euler(0, 0, 180);
+                GameObject herb = Instantiate(herb2Prefab, room.transform.position + new Vector3(x, -2.9f, z), rotation, room.transform);
             }
+        }
+    }
 
-            // Optional: Log herb generation
-            Debug.Log($"Herb1 generated at {herb.transform.position}. It will heal the player.");
+    void TryGenerateStone(GameObject room)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            float chance = Random.Range(0f, 1f); // Generate a random number between 0 and 1
+            if (chance <= 0.5f) // 10% chance to spawn a stone
+            {
+                float x = Random.Range(0f, 16f);
+                float z = Random.Range(0f, 16f);
+                GameObject stone = Instantiate(stonePrefab, room.transform.position + new Vector3(x, -2.9f, z), Quaternion.identity, room.transform);
+
+                // Ensure HerbAction component is attached to the herb prefab
+                StoneAction stoneAction = stone.GetComponent<StoneAction>();
+
+                Debug.Log($"stone generated at {stone.transform.position}");
+            }
         }
     }
 

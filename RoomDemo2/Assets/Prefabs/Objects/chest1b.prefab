@@ -22,15 +22,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 30
+      value: 43.154495
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.23
+      value: 0.049999952
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 37.557
+      value: 48.546238
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
       propertyPath: m_LocalRotation.w
@@ -60,13 +60,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -3876156402402005440, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
       propertyPath: m_Name
       value: chest1b
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
       propertyPath: m_TagString
       value: Chest
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422550460286167281, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2603769794035485318, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2603769794035485318, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
+      propertyPath: m_TagString
+      value: Chest
+      objectReference: {fileID: 0}
+    - target: {fileID: 6332561325672403109, guid: 085b3e6a9115cdd4c807fd8b5f2d2546, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -100,5 +124,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.26, y: 0.2, z: 0.2}
+  m_Size: {x: 0.3, y: 0.2, z: 0.2}
   m_Center: {x: 0, y: -0.04, z: 0}
