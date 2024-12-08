@@ -41,10 +41,10 @@ namespace GDS.Minimal {
         void Reset() {
             Debug.Log($"Reseting ".Yellow() + "[Basic Store]".Gray());
             MainInventory.SetState(
-                Create(BaseId.WarriorHelmet, Rarity.Unique),
+                //Create(BaseId.WarriorHelmet, Rarity.Unique),
                 Create(BaseId.LeatherArmor, Rarity.Magic),
-                Create(BaseId.SteelBoots, Rarity.Rare),
-                Create(BaseId.ShortSword, Rarity.Common)
+                Create(BaseId.SteelBoots, Rarity.Rare)
+                //Create(BaseId.ShortSword, Rarity.Common)
                 //Create(BaseId.Apple, Rarity.Rare, 10),
                 //Create(BaseId.Wood, Rarity.NoRarity, 199),
                 //Create(BaseId.Stone, Rarity.NoRarity,5)

@@ -5,10 +5,12 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System;
+using GDS.Minimal;
 
 public class BattleManager : MonoBehaviour
 {
     [SerializeField] private GameObject battleCanvas;
+    [SerializeField] private GameObject inventoryUI;
 
     [SerializeField] private TextMeshProUGUI infoText;
     [SerializeField] private TextMeshProUGUI playerHealthText;
@@ -40,7 +42,7 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle(List<IEnemy> enemies, float playerHealth, float playerStamina)
     {
-
+        inventoryUI.SetActive(false);
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true; // Make the cursor visible again
         gameOverText.gameObject.SetActive(false);

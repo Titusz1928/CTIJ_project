@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using GDS.Core;
 using GDS.Sample;
+using GDS.Minimal;
 using System.Linq;
 
 public class StoneAction : PickableAction
 {
-    public ListBag playerBag;
-
     public override void ExecuteAction(GameObject pickableObject)
     {
-        Destroy(pickableObject);
+        var mainInventory = Store.Instance.MainInventory;
+
         Debug.Log("Stone picked up");
 
-       /* // Retrieve the Stone item from the database
+        // Retrieve the Stone item from the database
         var stoneBase = DB.AllBases.FirstOrDefault(baseItem => baseItem.BaseId == BaseId.Stone);
 
         if (stoneBase != null)
@@ -37,8 +37,8 @@ public class StoneAction : PickableAction
                 ItemData: stoneData
             );
 
-            // Try adding the stone item to the player's bag
-            bool wasAdded = playerBag.AddItem(stoneItem);
+            // Try adding the stone item to the player's main inventory
+            bool wasAdded = mainInventory.AddItem(stoneItem);
 
             if (wasAdded)
             {
@@ -54,6 +54,6 @@ public class StoneAction : PickableAction
         else
         {
             Debug.LogError("Stone item not found in the database!");
-        }*/
+        }
     }
 }
