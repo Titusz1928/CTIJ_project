@@ -40,6 +40,9 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle(List<IEnemy> enemies, float playerHealth, float playerStamina)
     {
+
+        Cursor.lockState = CursorLockMode.None; // Unlock the cursor
+        Cursor.visible = true; // Make the cursor visible again
         gameOverText.gameObject.SetActive(false);
         enemyHealthManagers.Clear();
         enemyDamageManagersMap.Clear();
@@ -473,6 +476,9 @@ public class BattleManager : MonoBehaviour
         // Wait for the specified time
         yield return new WaitForSeconds(5);
 
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+
         // Load the MainMenu1 scene
         SceneManager.LoadScene("MainMenu1");
     }
@@ -483,6 +489,8 @@ public class BattleManager : MonoBehaviour
     {
         EndBattle();
         Debug.Log("Exited Battle");
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     public void EndBattle()

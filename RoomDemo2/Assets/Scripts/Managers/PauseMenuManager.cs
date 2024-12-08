@@ -22,6 +22,9 @@ public class PauseMenuManager : MonoBehaviour
 
     public void Resume()
     {
+        Debug.Log("Locking mouse");
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
         pauseMenuUI.SetActive(false); // Hide the pause menu
         gameMenuUI.SetActive(true);
         Time.timeScale = 1f;          // Resume game time
@@ -30,6 +33,8 @@ public class PauseMenuManager : MonoBehaviour
 
     public void Pause()
     {
+        Cursor.lockState = CursorLockMode.None; // Unlock the cursor
+        Cursor.visible = true; // Make the cursor visible again
         Time.timeScale = 0f; // Freeze game time
         gameMenuUI.SetActive(false);
         pauseMenuUI.SetActive(true); // Show the pause menu
