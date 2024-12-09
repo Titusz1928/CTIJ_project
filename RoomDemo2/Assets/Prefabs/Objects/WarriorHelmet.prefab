@@ -22,15 +22,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 32.402
+      value: 30.527
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.695
+      value: 1.672
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 43.446
+      value: 43.485
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
       propertyPath: m_LocalRotation.w
@@ -78,7 +78,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
       propertyPath: m_Name
-      value: helmet
+      value: WarriorHelmet
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
       propertyPath: m_Layer
@@ -87,6 +87,18 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
       propertyPath: m_TagString
       value: Pickable
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079003942005662171, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 5.245
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079003942005662171, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079003942005662171, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2172302378906038931, guid: 4ba069e4a8fbf0b40ba4b8f0335266cf, type: 3}
       propertyPath: m_Layer
@@ -136,7 +148,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.3, y: 0.4, z: 0.4}
-  m_Center: {x: -5.16, y: -1.8, z: 0}
+  m_Center: {x: 0, y: -1.8, z: 0}
 --- !u!114 &731316081646743317
 MonoBehaviour:
   m_ObjectHideFlags: 0

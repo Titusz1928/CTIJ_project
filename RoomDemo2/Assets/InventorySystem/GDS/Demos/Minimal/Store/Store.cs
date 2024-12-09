@@ -32,7 +32,11 @@ namespace GDS.Minimal {
         public readonly ListBag MainInventory = CreateListBag("MainInventory", 40);
         // DraggedItem contains info about the item being dragged (not a reference)
         // Views and behaviors subscribe to this and react by re-rendering or triggering other flows
+
+
+        //ORIGINAL:
         public readonly Observable<Item> DraggedItem = new(Item.NoItem);
+        //public Observable<Item> DraggedItem = new(Item.NoItem);
 
         /// <summary>
         /// Resets the Store state

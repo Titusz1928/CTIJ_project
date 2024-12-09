@@ -478,8 +478,8 @@ public class BattleManager : MonoBehaviour
         // Wait for the specified time
         yield return new WaitForSeconds(5);
 
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
 
         // Load the MainMenu1 scene
         SceneManager.LoadScene("MainMenu1");

@@ -11,6 +11,9 @@ public class GenericPickableAction : PickableAction
         // Use the name of the GameObject to identify the item
         string prefabName = pickableObject.name.Replace("(Clone)", "").Trim(); // Remove "(Clone)" suffix if instantiated
 
+        // Remove any number suffix like "(1)", "(2)", etc.
+        prefabName = System.Text.RegularExpressions.Regex.Replace(prefabName, @"\s\(\d+\)$", "").Trim();
+
         // Map the prefab name to a BaseId
         if (!System.Enum.TryParse<BaseId>(prefabName, out var baseId))
         {
