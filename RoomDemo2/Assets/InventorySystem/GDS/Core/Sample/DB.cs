@@ -16,6 +16,7 @@ namespace GDS.Sample {
             new (WarriorHelmet, "Warrior Helmet", "Shared/Icons/helmet", false,  Size2x2, ItemClass.Helmet),
             new (SteelBoots, "SteelBoots", "Shared/Icons/boots", false, Size2x2, ItemClass.Boots),
             new (LeatherArmor, "LeatherArmor", "Shared/Icons/armor", false, Size2x3, ItemClass.BodyArmor),
+            new (SteelArmor, "SteelArmor", "Shared/Icons/steelarmor", false, Size2x3, ItemClass.BodyArmor),
             new (ShortSword, "ShortSword", "Shared/Icons/sword", false, Size1x2, ItemClass.Weapon1H),
             new (Apple, "Apple", "Shared/Icons/apple", true, Size1x1, ItemClass.Consumable),
             new (Wood, "Wood", "Shared/Icons/wood", true, Size1x1, ItemClass.Material),
@@ -38,6 +39,7 @@ namespace GDS.Sample {
     public enum BaseId {
         WarriorHelmet,
         LeatherArmor,
+        SteelArmor,
         SteelBoots,
         ShortSword,
         Apple,

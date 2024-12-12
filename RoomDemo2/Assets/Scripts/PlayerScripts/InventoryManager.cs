@@ -51,8 +51,15 @@ public class InventoryManager : MonoBehaviour
         // Determine the drop position
         Vector3 dropPosition = transform.position + transform.forward;
 
-        // Instantiate the prefab at the desired position
-        GameObject droppedObject = Instantiate(prefab, dropPosition, Quaternion.identity);
+        // Generate a random rotation
+        Quaternion randomRotation = Quaternion.Euler(
+            Random.Range(0f, 360f), // Random X rotation
+            Random.Range(0f, 360f), // Random Y rotation
+            Random.Range(0f, 360f)  // Random Z rotation
+        );
+
+        // Instantiate the prefab at the desired position with random rotation
+        GameObject droppedObject = Instantiate(prefab, dropPosition, randomRotation);
 
         // Set the tag and layer for the dropped object
         droppedObject.tag = "Pickable"; // Set the tag to "Pickable"
@@ -102,8 +109,9 @@ public class InventoryManager : MonoBehaviour
         // Reset the dragged item
         Store.Instance.DraggedItem.SetValue(Item.NoItem);
 
-        Debug.Log($"Dropped item: {draggedItem.ItemBase.Name}, with components: Rigidbody, BoxCollider, GenericPickableAction");
+        Debug.Log($"Dropped item: {draggedItem.ItemBase.Name}, with components: Rigidbody, BoxCollider, GenericPickableAction, Random Rotation");
     }
+
 
 
 

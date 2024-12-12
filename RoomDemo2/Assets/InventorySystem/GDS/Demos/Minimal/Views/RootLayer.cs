@@ -18,6 +18,7 @@ namespace GDS.Minimal {
             // - adds a behavior that controls picking and placing items (default is pick and place on `MouseUp`)
             this.Add("root-layer",
                 new ListBagView<ListBag>(store.MainInventory),
+                //new SetSlotView<SetBag>(store.Equipment),
                 new GhostItemView(this, store.DraggedItem)
             ).WithDefaultPickBehavior(store.DraggedItem, store.Bus);
         }

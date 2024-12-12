@@ -6,11 +6,11 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using System;
 using GDS.Minimal;
+using Unity.VisualScripting;
 
 public class BattleManager : MonoBehaviour
 {
     [SerializeField] private GameObject battleCanvas;
-    [SerializeField] private GameObject inventoryUI;
 
     [SerializeField] private TextMeshProUGUI infoText;
     [SerializeField] private TextMeshProUGUI playerHealthText;
@@ -18,6 +18,18 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI gameOverText;
 
     [SerializeField] private Button[] gameButtons;
+
+    //Battle Log
+    [SerializeField] private TextMeshProUGUI logTitle;
+    [SerializeField] private TextMeshProUGUI logText;
+
+    //Inventory
+    [SerializeField] private GameObject battleInventory;
+    [SerializeField] private TextMeshProUGUI TextInventory;
+    private string textInventoryWeapons;
+    private string textInventoryConsums;
+    private string textInventoryMats; 
+
 
     [SerializeField] private Slider playerHealthSlider;
     [SerializeField] private Slider playerStaminaSlider;
@@ -42,15 +54,31 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle(List<IEnemy> enemies, float playerHealth, float playerStamina)
     {
-        inventoryUI.SetActive(false);
+        //setting up battle log (by default it appears first)
+        logText.gameObject.SetActive(true);
+        logTitle.gameObject.SetActive(true);
+
+        //settimg up battle inventory text
+        battleInventory.SetActive(false);
+        Debug.Log(Store.Instance.LogMainInventoryItems());
+        //TextInventory.text = Store.Instance.LogMainInventoryItems();
+        textInventoryWeapons = Store.Instance.getMainInventoryWeapons();
+        textInventoryConsums = Store.Instance.getMainInventoryConsumables();
+        textInventoryMats = Store.Instance.getMainInventoryMaterials();
+        TextInventory.text = textInventoryWeapons;
+
+
+        //enabling mouse
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true; // Make the cursor visible again
+
+        //hiding gameover text and clearing arrays
         gameOverText.gameObject.SetActive(false);
         enemyHealthManagers.Clear();
         enemyDamageManagersMap.Clear();
 
-        targetedEnemyIndex = 0; // Select the first enemy
-        //UpdateBorderPosition(targetedEnemyIndex);
+        //default targeted enemy
+        targetedEnemyIndex = 0; 
 
         if (battleCanvas == null || enemyImages == null || enemyImages.Count == 0 || enemyHealthPrefab == null)
         {
@@ -572,5 +600,33 @@ public class BattleManager : MonoBehaviour
         UpdateBorderPosition(index); // Update UI to show selected target
         infoText.text = $"Targeted Enemy {index + 1}: {enemyHealthManagers[index].CurrentHealth}/{enemyHealthManagers[index].maxHealth} HP";
         Debug.Log($"Enemy {index + 1} selected as target.");
+    }
+
+
+    public void ShowBattleLog()
+    {
+        battleInventory.SetActive(false);
+        logText.gameObject.SetActive( true );
+        logTitle.gameObject.SetActive(true);
+    }
+
+    public void ShowInventory()
+    {
+        logText.gameObject.SetActive(false);
+        logTitle.gameObject.SetActive(false);
+        battleInventory.SetActive(true);
+    }
+
+    public void weaponsSelected()
+    {
+        TextInventory.text = textInventoryWeapons;
+    }
+    public void consumablesSelected()
+    {
+        TextInventory.text = textInventoryConsums;
+    }
+    public void materialsSelected()
+    {
+        TextInventory.text = textInventoryMats;
     }
 }

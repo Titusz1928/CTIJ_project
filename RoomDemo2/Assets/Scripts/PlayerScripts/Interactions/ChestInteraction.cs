@@ -1,5 +1,8 @@
 using UnityEngine;
 using TMPro;
+using GDS.Core;
+using GDS.Sample;
+using GDS.Minimal;
 
 public class ChestInteraction : MonoBehaviour
 {
@@ -11,8 +14,10 @@ public class ChestInteraction : MonoBehaviour
 
     private bool isUIVisible = false;
 
+
     void Start()
     {
+
         // Ensure the UI starts hidden
         chestHintTextUI.text = "";
         chestHintTextUI.gameObject.SetActive(false);
@@ -32,7 +37,10 @@ public class ChestInteraction : MonoBehaviour
         // Raycast logic
         if (Physics.Raycast(ray, out hit, interactionDistance, openableLayer))
         {
-            if (hit.collider.CompareTag("Chest") && !isUIVisible)
+
+            Chest chest = hit.collider.GetComponent<Chest>();
+
+            if (chest != null && !isUIVisible)
             {
                 // Show hint text
                 chestHintTextUI.text = "Press E to open the chest";
@@ -41,7 +49,7 @@ public class ChestInteraction : MonoBehaviour
                 // Check for interaction key (Enter key)
                 if (Input.GetKeyDown(KeyCode.E))
                 {
-                    ShowChestText();
+                    OpenChest(chest);
                 }
             }
             else
@@ -65,15 +73,54 @@ public class ChestInteraction : MonoBehaviour
         }
     }
 
-    void ShowChestText()
+    private void OpenChest(Chest chest)
     {
         Debug.Log("Chest opened!");
-        chestHintTextUI.text = ""; // Hide hint text
+
+        // Hide hint text
+        chestHintTextUI.text = "";
         chestHintTextUI.gameObject.SetActive(false);
 
-        chestUI.text = "You opened the chest!";
-        chestUI.gameObject.SetActive(true); // Show chest UI
-        isUIVisible = true;
+        // Check if there are items left in the chest
+        if (chest.openedCount < chest.totalItemsInChest)
+        {
+            // Pick a random item from the database
+            var randomItemBase = DB.AllBases[Random.Range(0, DB.AllBases.Count)];
+
+            // Create a new item instance
+            Item newItem = new Item(
+                Id: GDS.Core.ItemFactory.Id(),
+                ItemBase: randomItemBase,
+                ItemData: new ItemData(Quant: 1)
+            );
+
+            // Add the item to the main inventory
+            bool wasAdded = Store.Instance.MainInventory.AddItem(newItem);
+
+            if (wasAdded)
+            {
+                Debug.Log($"{randomItemBase.Name} added to inventory!");
+                chestUI.text = $"You found a {randomItemBase.Name}!";
+            }
+            else
+            {
+                Debug.Log($"Failed to add {randomItemBase.Name} to inventory. No space.");
+                chestUI.text = "Your inventory is full!";
+            }
+
+            // Increment the counter
+            chest.openedCount++;
+        }
+        else
+        {
+            // No more items in the chest
+            Debug.Log("The chest is empty.");
+            chestUI.text = "The chest is empty.";
+        }
+
+        // Show chest UI temporarily
+        chestUI.gameObject.SetActive(true);
+        Invoke(nameof(HideChestText), 2f); // Hide UI after 2 seconds
     }
 
     void HideChestText()

@@ -6,6 +6,7 @@ using static GDS.Core.LogUtil;
 using static GDS.Core.InventoryFactory;
 using static GDS.Core.InventoryExtensions;
 using static GDS.Sample.ItemFactory;
+using System.Text;
 
 namespace GDS.Minimal {
 
@@ -33,10 +34,14 @@ namespace GDS.Minimal {
         // DraggedItem contains info about the item being dragged (not a reference)
         // Views and behaviors subscribe to this and react by re-rendering or triggering other flows
 
+        //TITUSZ
+        public readonly SetBag Equipment = CreateSetBag("Equipment", DB.EquipmentSlots);
 
-        //ORIGINAL:
+
+
+
         public readonly Observable<Item> DraggedItem = new(Item.NoItem);
-        //public Observable<Item> DraggedItem = new(Item.NoItem);
+        
 
         /// <summary>
         /// Resets the Store state
@@ -45,14 +50,12 @@ namespace GDS.Minimal {
         void Reset() {
             Debug.Log($"Reseting ".Yellow() + "[Basic Store]".Gray());
             MainInventory.SetState(
-                //Create(BaseId.WarriorHelmet, Rarity.Unique),
-                Create(BaseId.LeatherArmor, Rarity.Magic),
-                Create(BaseId.SteelBoots, Rarity.Rare)
-                //Create(BaseId.ShortSword, Rarity.Common)
-                //Create(BaseId.Apple, Rarity.Rare, 10),
-                //Create(BaseId.Wood, Rarity.NoRarity, 199),
-                //Create(BaseId.Stone, Rarity.NoRarity,5)
             );
+            //TITUSZ
+/*            Equipment.SetState(
+                (SlotType.Helmet.ToString(), Create(BaseId.WarriorHelmet, Rarity.Rare)),
+                (SlotType.Boots.ToString(), Create(BaseId.SteelBoots, Rarity.Magic))
+            );*/
         }
 
         /// <summary>
@@ -81,6 +84,77 @@ namespace GDS.Minimal {
             if (!success) return;
             DraggedItem.SetValue(replacedItem);
             e.Bag.Notify();
+        }
+
+        public string LogMainInventoryItems()
+        {
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.AppendLine("MainInventory Items:");
+
+            foreach (var slot in MainInventory.Slots)
+            {
+                if (slot.Item is not NoItem)
+                {
+                    logBuilder.AppendLine($"{slot.Item.Name()}");
+                }
+/*                else
+                {
+                    logBuilder.AppendLine($"Slot {slot.Index}: Empty");
+                }*/
+            }
+
+            return logBuilder.ToString();
+        }
+
+        public string getMainInventoryWeapons()
+        {
+            StringBuilder logBuilder = new StringBuilder();
+            //logBuilder.AppendLine("MainInventory Weapons:");
+
+            foreach (var slot in MainInventory.Slots)
+            {
+                // Assuming "Weapon" is the class or type that represents weapons
+                if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Weapon1H)
+                {
+                    logBuilder.AppendLine($"{slot.Item.Name()}");
+                }
+            }
+
+            return logBuilder.ToString();
+        }
+
+        public string getMainInventoryConsumables()
+        {
+            StringBuilder logBuilder = new StringBuilder();
+            //logBuilder.AppendLine("MainInventory Consumables:");
+
+            foreach (var slot in MainInventory.Slots)
+            {
+                // Assuming "Weapon" is the class or type that represents weapons
+                if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Consumable)
+                {
+                    logBuilder.AppendLine($"{slot.Item.Name()}");
+                }
+            }
+
+            return logBuilder.ToString();
+        }
+
+        public string getMainInventoryMaterials()
+        {
+            StringBuilder logBuilder = new StringBuilder();
+            //logBuilder.AppendLine("MainInventory Consumables:");
+
+            foreach (var slot in MainInventory.Slots)
+            {
+                // Assuming "Weapon" is the class or type that represents weapons
+                if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Material)
+                {
+                    logBuilder.AppendLine($"{slot.Item.Name()}");
+                }
+            }
+
+            return logBuilder.ToString();
         }
     }
 }
