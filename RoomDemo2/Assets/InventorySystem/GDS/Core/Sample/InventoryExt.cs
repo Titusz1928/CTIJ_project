@@ -5,8 +5,7 @@ namespace GDS.Sample {
     /// <summary>
     /// Adds an `ItemClass` field to `ItemBase`
     /// </summary>
-    public record SampleItemBase(BaseId BaseId, string Name, string IconPath, bool Stackable, Size Size, ItemClass Class) : Core.ItemBase(BaseId.ToString(), Name, IconPath, Stackable, Size);
-    /// <summary>
+    public record SampleItemBase(BaseId BaseId, string Name, string IconPath, bool Stackable, Size Size, ItemClass Class) : Core.ItemBase(BaseId.ToString(), Name, IconPath, Stackable, Size, Class);
     /// Adds a `Rarity` field to `ItemData`
     /// </summary>
     public record SampleItemData(Rarity Rarity, int Quant = 1) : ItemData(Quant);

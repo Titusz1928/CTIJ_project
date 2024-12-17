@@ -7,6 +7,7 @@ using static GDS.Core.InventoryFactory;
 using static GDS.Core.InventoryExtensions;
 using static GDS.Sample.ItemFactory;
 using System.Text;
+using System.Collections.Generic;
 
 namespace GDS.Minimal {
 
@@ -50,12 +51,13 @@ namespace GDS.Minimal {
         void Reset() {
             Debug.Log($"Reseting ".Yellow() + "[Basic Store]".Gray());
             MainInventory.SetState(
+                  Create(BaseId.Apple, Rarity.Common),
+                  Create(BaseId.Apple, Rarity.Common),
+                  Create(BaseId.Apple, Rarity.Common),
+                  Create(BaseId.LeatherArmor,Rarity.Unique),
+                  Create(BaseId.WarriorHelmet, Rarity.Rare),
+                  Create(BaseId.SteelBoots, Rarity.Legendary)
             );
-            //TITUSZ
-/*            Equipment.SetState(
-                (SlotType.Helmet.ToString(), Create(BaseId.WarriorHelmet, Rarity.Rare)),
-                (SlotType.Boots.ToString(), Create(BaseId.SteelBoots, Rarity.Magic))
-            );*/
         }
 
         /// <summary>
@@ -106,55 +108,53 @@ namespace GDS.Minimal {
             return logBuilder.ToString();
         }
 
-        public string getMainInventoryWeapons()
+        public string[] getMainInventoryWeapons()
         {
-            StringBuilder logBuilder = new StringBuilder();
-            //logBuilder.AppendLine("MainInventory Weapons:");
+            List<string> weaponsList = new List<string>(); // Create a list to hold the item names
 
             foreach (var slot in MainInventory.Slots)
             {
                 // Assuming "Weapon" is the class or type that represents weapons
                 if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Weapon1H)
                 {
-                    logBuilder.AppendLine($"{slot.Item.Name()}");
+                    weaponsList.Add(slot.Item.Name()); // Add the item name to the list
                 }
             }
 
-            return logBuilder.ToString();
+            return weaponsList.ToArray(); // Convert the list to an array and return it
         }
 
-        public string getMainInventoryConsumables()
+        public string[] getMainInventoryConsumables()
         {
-            StringBuilder logBuilder = new StringBuilder();
-            //logBuilder.AppendLine("MainInventory Consumables:");
+            List<string> consumablesList = new List<string>(); // Create a list to hold the item names
 
             foreach (var slot in MainInventory.Slots)
             {
-                // Assuming "Weapon" is the class or type that represents weapons
+                // Assuming "Consumable" is the class or type that represents consumables
                 if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Consumable)
                 {
-                    logBuilder.AppendLine($"{slot.Item.Name()}");
+                    consumablesList.Add(slot.Item.Name()); // Add the item name to the list
                 }
             }
 
-            return logBuilder.ToString();
+            return consumablesList.ToArray(); // Convert the list to an array and return it
         }
 
-        public string getMainInventoryMaterials()
+        public string[] getMainInventoryMaterials()
         {
-            StringBuilder logBuilder = new StringBuilder();
-            //logBuilder.AppendLine("MainInventory Consumables:");
+            List<string> materialsList = new List<string>(); // Create a list to hold the item names
 
             foreach (var slot in MainInventory.Slots)
             {
-                // Assuming "Weapon" is the class or type that represents weapons
+                // Assuming "Material" is the class or type that represents materials
                 if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Material)
                 {
-                    logBuilder.AppendLine($"{slot.Item.Name()}");
+                    materialsList.Add(slot.Item.Name()); // Add the item name to the list
                 }
             }
 
-            return logBuilder.ToString();
+            return materialsList.ToArray(); // Convert the list to an array and return it
         }
+
     }
 }

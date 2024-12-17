@@ -7,6 +7,8 @@ using UnityEngine.SceneManagement;
 using System;
 using GDS.Minimal;
 using Unity.VisualScripting;
+using GDS.Sample;
+using System.Linq;
 
 public class BattleManager : MonoBehaviour
 {
@@ -25,10 +27,12 @@ public class BattleManager : MonoBehaviour
 
     //Inventory
     [SerializeField] private GameObject battleInventory;
-    [SerializeField] private TextMeshProUGUI TextInventory;
-    private string textInventoryWeapons;
-    private string textInventoryConsums;
-    private string textInventoryMats; 
+    private string[] textInventoryWeapons;
+    private string[] textInventoryConsums;
+    private string[] textInventoryMats;
+
+    [SerializeField] private Button buttonPrefab; // Reference to the Button prefab
+    [SerializeField] private RectTransform contentTransform;
 
 
     [SerializeField] private Slider playerHealthSlider;
@@ -65,7 +69,7 @@ public class BattleManager : MonoBehaviour
         textInventoryWeapons = Store.Instance.getMainInventoryWeapons();
         textInventoryConsums = Store.Instance.getMainInventoryConsumables();
         textInventoryMats = Store.Instance.getMainInventoryMaterials();
-        TextInventory.text = textInventoryWeapons;
+        UpdateInventoryUI(textInventoryWeapons);
 
 
         //enabling mouse
@@ -619,14 +623,99 @@ public class BattleManager : MonoBehaviour
 
     public void weaponsSelected()
     {
-        TextInventory.text = textInventoryWeapons;
+        UpdateInventoryUI(textInventoryWeapons);
     }
     public void consumablesSelected()
     {
-        TextInventory.text = textInventoryConsums;
+        UpdateInventoryUI(textInventoryConsums);
     }
     public void materialsSelected()
     {
-        TextInventory.text = textInventoryMats;
+        UpdateInventoryUI(textInventoryMats);
+    }
+
+    private void UpdateInventoryUI(string[] items)
+    {
+        // Clear any existing buttons in the content area
+        foreach (Transform child in contentTransform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Instantiate a button for each item in the selected category
+        foreach (var item in items)
+        {
+            // Instantiate the button prefab
+            Button newButton = Instantiate(buttonPrefab, contentTransform);
+
+            // Set the button's text
+            TextMeshProUGUI buttonText = newButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (buttonText != null)
+            {
+                buttonText.text = item;
+            }
+            else
+            {
+                Debug.LogWarning("TextMeshProUGUI component not found in button prefab.");
+            }
+
+            // Find the item in the database
+            var dbItem = DB.AllBases.FirstOrDefault(dbBase => dbBase.Name == item);
+            if (dbItem != null)
+            {
+                // Find the child object explicitly named "Image" (or your specific naming convention)
+                Transform childImageTransform = newButton.transform.Find("ItemIconImage");
+                if (childImageTransform != null)
+                {
+                    Image childImage = childImageTransform.GetComponent<Image>();
+                    if (childImage != null)
+                    {
+                        Sprite iconSprite = Resources.Load<Sprite>(dbItem.IconPath);
+                        if (iconSprite != null)
+                        {
+                            childImage.sprite = iconSprite;
+
+                            // Adjust the Image's size
+                            RectTransform imageRect = childImage.GetComponent<RectTransform>();
+                            if (imageRect != null)
+                            {
+                                imageRect.anchorMin = new Vector2(0.5f, 0.5f); // Center anchoring
+                                imageRect.anchorMax = new Vector2(0.5f, 0.5f);
+                                imageRect.pivot = new Vector2(0.5f, 0.5f);     // Pivot in the center
+                                imageRect.sizeDelta = new Vector2(64, 64);     // Fixed size
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Icon not found for item: {dbItem.Name} at path: {dbItem.IconPath}");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Image component not found on child 'Image' in button prefab.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Child object 'Image' not found in button prefab.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Item not found in database: {item}");
+            }
+
+            // Add a listener for button clicks
+            newButton.onClick.AddListener(() => OnItemSelected(item));
+        }
+    }
+
+
+    // Handle what happens when an item is selected
+    private void OnItemSelected(string item)
+    {
+        // For example, display the selected item's name in the TextInventory
+        //TextInventory.text = "Selected Item: " + item;
+        Debug.Log(item);
     }
 }

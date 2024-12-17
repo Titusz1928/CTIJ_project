@@ -25,7 +25,8 @@ public class StoneAction : PickableAction
                 Name: "Stone",
                 IconPath: "Shared/Icons/stone",
                 Stackable: true,
-                Size: new Size(1, 1)  // Adjust Size as needed
+                Size: new Size(1, 1),  // Adjust Size as needed
+                ItemClass: ItemClass.Material
             );
 
             ItemData stoneData = new ItemData(Quant: 1);  // Set Quant to 1 (or any other quantity)

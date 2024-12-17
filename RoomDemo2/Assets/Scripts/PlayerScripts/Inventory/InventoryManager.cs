@@ -2,10 +2,14 @@ using System.Collections;
 using UnityEngine;
 using GDS.Minimal;
 using GDS.Core;
+using GDS.Sample;
+using System;
 
 public class InventoryManager : MonoBehaviour
 {
     public GameObject inventoryUI; // Reference to the inventory UI GameObject
+    [SerializeField] private PlayerHealth playerHealth;
+    [SerializeField] private ArmorInventory armorInventory;
 
     private bool isInventoryOpen = false;
 
@@ -20,6 +24,12 @@ public class InventoryManager : MonoBehaviour
         {
             DropDraggedItem();
         }
+
+        if (isInventoryOpen && Input.GetMouseButtonDown(1))
+        {
+            HandleRightClick();
+        }
+
     }
 
     public void ToggleInventory()
@@ -28,6 +38,83 @@ public class InventoryManager : MonoBehaviour
         inventoryUI.SetActive(isInventoryOpen); // Show/hide the inventory UI
         Cursor.lockState = isInventoryOpen ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = isInventoryOpen;
+    }
+
+
+
+    private void HandleRightClick()
+    {
+        var draggedItem = Store.Instance.DraggedItem.Value; // Access the actual item from the Observable
+        Debug.Log("Right-click detected");
+
+        if (draggedItem == Item.NoItem)
+        {
+            Debug.Log("No item is currently being dragged.");
+            return;
+        }
+
+        switch (draggedItem.ItemBase.ItemClass)
+        {
+            case GDS.Sample.ItemClass.BodyArmor:
+            case GDS.Sample.ItemClass.Boots:
+            case GDS.Sample.ItemClass.Helmet:
+                armorInventory.EquipArmor(draggedItem);
+                Store.Instance.DraggedItem.SetValue(Item.NoItem); // Remove item from inventory after equipping
+                armorInventory.DisplayEquippedArmor();
+                break;
+
+            case GDS.Sample.ItemClass.Consumable:
+                HandleConsumable(draggedItem);
+                break;
+
+            default:
+                Debug.Log("Dragged item is of another type.");
+                break;
+        }
+    }
+
+    private void HandleConsumable(Item draggedItem)
+    {
+        Debug.Log("Dragged item is consumable.");
+
+        // Convert ItemBase.Id (string) to BaseId (enum)
+        if (Enum.TryParse<BaseId>(draggedItem.ItemBase.Id, out var baseId))
+        {
+            if (ConsumableManager.Effects.TryGetValue(baseId, out var effect))
+            {
+                Debug.Log($"This consumable will restore {effect.health} HP and {effect.stamina} Stamina.");
+
+                UpdateItemQuantity(draggedItem);
+
+                // Update the player's health
+                playerHealth.IncreaseHealth(effect.health);
+            }
+            else
+            {
+                Debug.Log("No effect data found for this consumable.");
+            }
+        }
+        else
+        {
+            Debug.LogError($"Failed to parse '{draggedItem.ItemBase.Id}' as a BaseId.");
+        }
+    }
+
+    private void UpdateItemQuantity(Item draggedItem)
+    {
+        // Create a new ItemData with the updated quantity
+        var newItemData = draggedItem.ItemData with { Quant = draggedItem.ItemData.Quant - 1 };
+
+        // If the quantity is less than or equal to 0, set the item to NoItem
+        if (newItemData.Quant <= 0)
+        {
+            Store.Instance.DraggedItem.SetValue(Item.NoItem);
+        }
+        else
+        {
+            // Otherwise, update the item with the new quantity
+            Store.Instance.DraggedItem.SetValue(draggedItem with { ItemData = newItemData });
+        }
     }
 
     private void DropDraggedItem()
@@ -53,9 +140,9 @@ public class InventoryManager : MonoBehaviour
 
         // Generate a random rotation
         Quaternion randomRotation = Quaternion.Euler(
-            Random.Range(0f, 360f), // Random X rotation
-            Random.Range(0f, 360f), // Random Y rotation
-            Random.Range(0f, 360f)  // Random Z rotation
+            UnityEngine.Random.Range(0f, 360f), // Random X rotation
+            UnityEngine.Random.Range(0f, 360f), // Random Y rotation
+            UnityEngine.Random.Range(0f, 360f)  // Random Z rotation
         );
 
         // Instantiate the prefab at the desired position with random rotation
@@ -106,8 +193,11 @@ public class InventoryManager : MonoBehaviour
             droppedObject.AddComponent<GenericPickableAction>();
         }
 
-        // Reset the dragged item
-        Store.Instance.DraggedItem.SetValue(Item.NoItem);
+
+
+        var newItemData = draggedItem.ItemData with { Quant = draggedItem.ItemData.Quant - 1 };
+
+        UpdateItemQuantity(draggedItem);
 
         Debug.Log($"Dropped item: {draggedItem.ItemBase.Name}, with components: Rigidbody, BoxCollider, GenericPickableAction, Random Rotation");
     }

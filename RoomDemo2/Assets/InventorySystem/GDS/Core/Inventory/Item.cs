@@ -3,10 +3,12 @@
 // - ItemFactory - a collection of factory methods for creating all types of items
 // - ItemExt - a collection of extension methods related to the Item type
 
+using GDS.Sample;
+
 namespace GDS.Core {
     public record Item(int Id, ItemBase ItemBase, ItemData ItemData) { public static NoItem NoItem = new(); };
     public record NoItem : Item { public NoItem() : base(-1, ItemFactory.NoItemBase, ItemFactory.NoItemData) { } }
-    public record ItemBase(string Id, string Name, string IconPath, bool Stackable, Size Size);
+    public record ItemBase(string Id, string Name, string IconPath, bool Stackable, Size Size, ItemClass ItemClass);
     public record ItemData(int Quant = 1);
 
     public record Size(int W, int H) {
@@ -25,7 +27,7 @@ namespace GDS.Core {
     public static class ItemFactory {
         static int _lastId = 0;
         public static int Id() => _lastId++;
-        public static ItemBase NoItemBase = new("NoItem", "NoItem", "", false, Size.Size1x1);
+        public static ItemBase NoItemBase = new("NoItem", "NoItem", "", false, Size.Size1x1, 0);
         public static ItemData NoItemData = new();
         public static Item Create(ItemBase itemBase, ItemData itemData) => new(Id(), itemBase, itemData);
         public static Item Create(ItemBase itemBase) => new(Id(), itemBase, NoItemData);

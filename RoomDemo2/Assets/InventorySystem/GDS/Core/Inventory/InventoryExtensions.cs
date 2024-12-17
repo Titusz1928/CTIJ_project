@@ -229,6 +229,29 @@ namespace GDS.Core {
             return (true, item);
         }
 
+        public static (bool, Item) MyConsume(this ListBag bag, Item draggedItem)
+        {
+            // Find the slot that contains the dragged item
+            var slot = bag.Slots.FirstOrDefault(s => s.Item == draggedItem);
+
+            // If the dragged item is not in any slot, return false
+            if (slot == null || slot.IsEmpty())
+                return (false, Item.NoItem);
+
+            var item = slot.Item;
+            var newQuant = item.ItemData.Quant - 1;
+
+            // If the quantity becomes 0, we return no item; otherwise, we create a new item with updated quantity
+            var newItem = newQuant == 0 ? Item.NoItem : item with { ItemData = new(newQuant) };
+
+            // Update the slot with the new item
+            int slotIndex = bag.Slots.IndexOf(slot);
+            bag.Slots[slotIndex] = slot with { Item = newItem };
+
+            return (true, item);
+        }
+
+
         /// <summary>
         /// Sets the state of a SetBag
         /// </summary>        
