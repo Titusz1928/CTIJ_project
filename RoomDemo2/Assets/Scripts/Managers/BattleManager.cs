@@ -9,6 +9,7 @@ using GDS.Minimal;
 using Unity.VisualScripting;
 using GDS.Sample;
 using System.Linq;
+using System.Buffers.Text;
 
 public class BattleManager : MonoBehaviour
 {
@@ -30,6 +31,19 @@ public class BattleManager : MonoBehaviour
     private string[] textInventoryWeapons;
     private string[] textInventoryConsums;
     private string[] textInventoryMats;
+
+    private int[] inventoryWeaponsAmounts;
+    private int[] inventorConsumsAmounts;
+    private int[] inventoryMatsAmounts;
+
+    [SerializeField] private TextMeshProUGUI armorValueText;
+    [SerializeField] private ArmorInventory armorInventory;
+    [SerializeField] private TextMeshProUGUI equippedItemText;
+
+    private int gameArmorValue;
+    private string gameEquippedItem = "";
+    /// 
+
 
     [SerializeField] private Button buttonPrefab; // Reference to the Button prefab
     [SerializeField] private RectTransform contentTransform;
@@ -66,11 +80,9 @@ public class BattleManager : MonoBehaviour
         battleInventory.SetActive(false);
         Debug.Log(Store.Instance.LogMainInventoryItems());
         //TextInventory.text = Store.Instance.LogMainInventoryItems();
-        textInventoryWeapons = Store.Instance.getMainInventoryWeapons();
-        textInventoryConsums = Store.Instance.getMainInventoryConsumables();
-        textInventoryMats = Store.Instance.getMainInventoryMaterials();
-        UpdateInventoryUI(textInventoryWeapons);
+        calculateInventory();
 
+        calculateArmorValue();
 
         //enabling mouse
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
@@ -239,8 +251,87 @@ public class BattleManager : MonoBehaviour
         infoText.text = battleInfo;
     }
 
+    public void calculateInventory()
+    {
+        textInventoryWeapons = Store.Instance.getMainInventoryWeapons();
+        textInventoryConsums = Store.Instance.getMainInventoryConsumables();
+        textInventoryMats = Store.Instance.getMainInventoryMaterials();
+        inventoryWeaponsAmounts = Store.Instance.getMainInventoryWeaponsAmounts();
+        inventorConsumsAmounts = Store.Instance.getMainInventoryConsumablesAmounts();
+        inventoryMatsAmounts = Store.Instance.getMainInventoryMaterialsAmounts();
+        UpdateInventoryUI(textInventoryWeapons, inventoryWeaponsAmounts);
+    }
+
+    public void calculateArmorValue()
+    {
+        gameArmorValue = 0;
+        string helmetname = armorInventory.HelmetSlot.ItemBase.Id.ToString();
+        // Try to parse the helmet ID as a BaseId
+        if (Enum.TryParse<GDS.Sample.BaseId>(helmetname, out var helmetBaseId))
+        {
+            // Now use the parsed BaseId to look up in the ArmorManager.Effects dictionary
+            if (ArmorManager.Effects.TryGetValue(helmetBaseId, out var helmetArmorValue))
+            {
+                gameArmorValue += helmetArmorValue; // Add the value to the total armor value
+            }
+            else
+            {
+                Debug.LogWarning($"No armor value found for helmet: {helmetBaseId}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"Failed to parse '{helmetname}' as a BaseId.");
+        }
+
+        string bodyarmorname = armorInventory.BodyArmorSlot.ItemBase.Id.ToString();
+
+        // Try to parse the helmet ID as a BaseId
+        if (Enum.TryParse<GDS.Sample.BaseId>(bodyarmorname, out var bodyarmorBaseId))
+        {
+            // Now use the parsed BaseId to look up in the ArmorManager.Effects dictionary
+            if (ArmorManager.Effects.TryGetValue(bodyarmorBaseId, out var bodyArmorValue))
+            {
+                gameArmorValue += bodyArmorValue; // Add the value to the total armor value
+            }
+            else
+            {
+                Debug.LogWarning($"No armor value found for helmet: {bodyarmorBaseId}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"Failed to parse '{bodyarmorname}' as a BaseId.");
+        }
+
+        string bootname = armorInventory.BootsSlot.ItemBase.Id.ToString();
+
+        // Try to parse the helmet ID as a BaseId
+        if (Enum.TryParse<GDS.Sample.BaseId>(bootname, out var bootBaseId))
+        {
+            // Now use the parsed BaseId to look up in the ArmorManager.Effects dictionary
+            if (ArmorManager.Effects.TryGetValue(bootBaseId, out var bootArmorValue))
+            {
+                gameArmorValue += bootArmorValue; // Add the value to the total armor value
+            }
+            else
+            {
+                Debug.LogWarning($"No armor value found for helmet: {bootBaseId}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"Failed to parse '{bootname}' as a BaseId.");
+        }
+
+        armorValueText.SetText(gameArmorValue.ToString());
+        return;
+
+    }
+
     public void EndTurn()
     {
+        ShowBattleLog();
         foreach (Button btn in gameButtons)
         {
             btn.interactable = false;
@@ -252,83 +343,124 @@ public class BattleManager : MonoBehaviour
 
     private IEnumerator ExecuteEndTurn()
     {
+        bool isConsuming = false;
+        bool isAttacking = false;
         Debug.Log("Starting end-turn sequence.");
 
         // Process enemies first
         Debug.Log("enemies remaining:" + enemyHealthManagers.Count);
+        infoText.text = $"You equipped: {gameEquippedItem}";
 
 
         //decrease health for every enemy (area damage attacks)
-/*        for (int i = 0; i < enemyHealthManagers.Count; i++)
+        /*        for (int i = 0; i < enemyHealthManagers.Count; i++)
+                {
+                    HealthManager enemyHealth = enemyHealthManagers[i];
+                    Debug.Log("enemy nr. " + i + ", health=" + enemyHealth);
+                    if (enemyHealth != null)
+                    {
+                        Debug.Log($"Processing enemy {i + 1}/{enemyHealthManagers.Count} with initial health: {enemyHealth.CurrentHealth}");
+
+                        // Decrease health using the method
+
+                        enemyHealth.DecreaseHealth(50);
+                        Debug.Log($"Enemy {i + 1} health decreased. Current health: {enemyHealth.CurrentHealth}");
+
+                        // Update UI slider
+                        if (activeEnemyHealthUI[i] != null)
+                        {
+                            Slider healthSlider = activeEnemyHealthUI[i].GetComponent<Slider>();
+                            if (healthSlider != null)
+                            {
+                                healthSlider.value = enemyHealth.CurrentHealth;
+                                Debug.Log($"Enemy {i + 1} UI health slider updated to: {healthSlider.value}");
+                            }
+
+                            // Update info text
+                            TextMeshProUGUI healthInfoText = activeEnemyHealthUI[i].GetComponentInChildren<TextMeshProUGUI>();
+                            if (healthInfoText != null)
+                            {
+                                // Preserve the enemy name by splitting the current text if necessary
+                                string[] lines = healthInfoText.text.Split('\n');
+                                string enemyName = lines.Length > 0 ? lines[0] : "Unknown";
+
+                                // Update the text while keeping the enemy name
+                                healthInfoText.text = $"{enemyName}\n{Mathf.RoundToInt(enemyHealth.CurrentHealth)}/{Mathf.RoundToInt(enemyHealth.maxHealth)}";
+                                Debug.Log($"Enemy {i + 1} UI health text updated to: {healthInfoText.text}");
+                            }
+                        }
+
+                        // Wait a few seconds
+                        yield return new WaitForSeconds(2f);
+
+                        // Check if the enemy has been removed or is null
+                        if (enemyHealth == null)
+                        {
+                            Debug.Log($"Enemy {i + 1} has been defeated. Deactivating UI.");
+
+                            // Deactivate the UI components for the defeated enemy
+                            if (activeEnemyHealthUI[i] != null)
+                            {
+                                activeEnemyHealthUI[i].SetActive(false); // Disable the health slider
+                            }
+
+                            if (enemyImages[i] != null)
+                            {
+                                enemyImages[i].gameObject.SetActive(false); // Disable the enemy image
+                            }
+                            yield return new WaitForSeconds(1f);
+                        }
+
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Enemy {i + 1} does not have a valid HealthManager component.");
+                    }
+                }
+        */
+
+
+        if (gameEquippedItem != null || gameEquippedItem=="")
         {
-            HealthManager enemyHealth = enemyHealthManagers[i];
-            Debug.Log("enemy nr. " + i + ", health=" + enemyHealth);
-            if (enemyHealth != null)
+            // Try to find the equipped item in the AllBasesDict using the BaseId key
+            if (Enum.TryParse<BaseId>(gameEquippedItem, out var baseId) && DB.AllBasesDict.TryGetValue(baseId, out var equippedItem))
             {
-                Debug.Log($"Processing enemy {i + 1}/{enemyHealthManagers.Count} with initial health: {enemyHealth.CurrentHealth}");
+                // Log the ItemClass of the equipped item
+                Debug.Log($"Equipped Item: {equippedItem.Name}, Class: {equippedItem.ItemClass}");
 
-                // Decrease health using the method
 
-                enemyHealth.DecreaseHealth(50);
-                Debug.Log($"Enemy {i + 1} health decreased. Current health: {enemyHealth.CurrentHealth}");
-
-                // Update UI slider
-                if (activeEnemyHealthUI[i] != null)
+                if (equippedItem.ItemClass == ItemClass.Weapon1H)
                 {
-                    Slider healthSlider = activeEnemyHealthUI[i].GetComponent<Slider>();
-                    if (healthSlider != null)
-                    {
-                        healthSlider.value = enemyHealth.CurrentHealth;
-                        Debug.Log($"Enemy {i + 1} UI health slider updated to: {healthSlider.value}");
-                    }
-
-                    // Update info text
-                    TextMeshProUGUI healthInfoText = activeEnemyHealthUI[i].GetComponentInChildren<TextMeshProUGUI>();
-                    if (healthInfoText != null)
-                    {
-                        // Preserve the enemy name by splitting the current text if necessary
-                        string[] lines = healthInfoText.text.Split('\n');
-                        string enemyName = lines.Length > 0 ? lines[0] : "Unknown";
-
-                        // Update the text while keeping the enemy name
-                        healthInfoText.text = $"{enemyName}\n{Mathf.RoundToInt(enemyHealth.CurrentHealth)}/{Mathf.RoundToInt(enemyHealth.maxHealth)}";
-                        Debug.Log($"Enemy {i + 1} UI health text updated to: {healthInfoText.text}");
-                    }
+                    isAttacking = true;
                 }
-
-                // Wait a few seconds
-                yield return new WaitForSeconds(2f);
-
-                // Check if the enemy has been removed or is null
-                if (enemyHealth == null)
+                if(equippedItem.ItemClass == ItemClass.Consumable)
                 {
-                    Debug.Log($"Enemy {i + 1} has been defeated. Deactivating UI.");
-
-                    // Deactivate the UI components for the defeated enemy
-                    if (activeEnemyHealthUI[i] != null)
-                    {
-                        activeEnemyHealthUI[i].SetActive(false); // Disable the health slider
-                    }
-
-                    if (enemyImages[i] != null)
-                    {
-                        enemyImages[i].gameObject.SetActive(false); // Disable the enemy image
-                    }
-                    yield return new WaitForSeconds(1f);
+                    isConsuming = true;
                 }
-
             }
             else
             {
-                Debug.LogWarning($"Enemy {i + 1} does not have a valid HealthManager component.");
+                // Log an error if the BaseId was not found
+                Debug.LogError($"Equipped item '{gameEquippedItem}' could not be found in the database.");
             }
         }
-*/
+        else
+        {
+            Debug.LogWarning("No item is currently equipped.");
+        }
 
 
+        //if selected item is consumable
+        if (isConsuming)
+        {
+            consumeItem();
+            yield return new WaitForSeconds(2f);
+        }
+
+        //if selected item is a weapon
         HealthManager enemyHealth = enemyHealthManagers[targetedEnemyIndex];
         Debug.Log("enemy nr. " + targetedEnemyIndex + ", health=" + enemyHealth);
-        if (enemyHealth != null)
+        if (enemyHealth != null && isAttacking)
         {
             Debug.Log($"Processing enemy {targetedEnemyIndex + 1}/{enemyHealthManagers.Count} with initial health: {enemyHealth.CurrentHealth}");
 
@@ -435,9 +567,13 @@ public class BattleManager : MonoBehaviour
                 //Debug.LogWarning("player will take damage from customindex:"+ customIndex);
                 EnemyDamageManager damageManager = enemyDamageManagerPair.Value; // Get the corresponding EnemyDamageManager
 
-                int currentdamage = Mathf.RoundToInt(UnityEngine.Random.Range(damageManager.getMinDamage, damageManager.getMaxDamage));
-                Debug.Log("calculated enemy damage: " + currentdamage);
-                playerHealthManager.DecreaseHealth(currentdamage);
+                int rawdamage = Mathf.RoundToInt(UnityEngine.Random.Range(damageManager.getMinDamage, damageManager.getMaxDamage));
+                Debug.Log("calculated enemy damage: " + rawdamage);
+
+                int finaldamage = calculateFinalDamage(rawdamage);
+
+                playerHealthManager.DecreaseHealth(finaldamage);
+                infoText.SetText("Enemy inflicted " + finaldamage + " damage");
                 Debug.Log($"Player health decreased. Current health: {playerHealthManager.getCurrentHealth()}");
                 // Update player health UI
                 if (playerHealthSlider != null)
@@ -496,10 +632,124 @@ public class BattleManager : MonoBehaviour
         }
 
         // Update info text for the next turn
+        gameEquippedItem = "";
         infoText.text = "Turn ended. Prepare for the next move!";
+        equippedItemText.SetText("-");
         Debug.Log("End-turn sequence complete. Info text updated.");
 
     }
+
+    private void consumeItem()
+    {
+        // Check if the player has equipped an item
+        if (string.IsNullOrEmpty(gameEquippedItem))
+        {
+            Debug.LogWarning("No item is equipped to consume.");
+            return;
+        }
+
+        try
+        {
+            // Parse the string value of gameEquippedItem to the corresponding BaseId enum
+            if (Enum.TryParse(gameEquippedItem, out BaseId itemId))
+            {
+                // Check if the item exists in the Effects dictionary
+                if (ConsumableManager.Effects.TryGetValue(itemId, out var effect))
+                {
+                    int healthToRestore = effect.health;
+
+                    // Apply the health effect
+                    playerHealthManager.IncreaseHealth(healthToRestore);
+                    playerHealthSlider.value = playerHealthManager.getCurrentHealth();
+                    playerHealthText.text = $"{playerHealthManager.getCurrentHealth()}/100";
+
+                    removeItemFromInventory();
+
+                    Debug.Log($"Consumed {gameEquippedItem}, restored {healthToRestore} health.");
+                    infoText.SetText($"Consumed {gameEquippedItem}, restored {healthToRestore} health.");
+
+                }
+                else
+                {
+                    Debug.LogWarning($"Item {gameEquippedItem} is not a consumable.");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Invalid item name: {gameEquippedItem}. Cannot parse to BaseId.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error consuming item {gameEquippedItem}: {ex.Message}");
+        }
+
+        return;
+    }
+
+    private void removeItemFromInventory()
+    {
+        if (string.IsNullOrEmpty(gameEquippedItem))
+        {
+            Debug.LogWarning("No item is equipped to remove.");
+            return;
+        }
+
+        // Access the MainInventory Slots
+        var slots = Store.Instance.MainInventory.Slots;
+
+        // Find the specific item in the slots
+        for (int i = 0; i < slots.Count; i++)
+        {
+            var currentSlot = slots[i];
+
+            // Check if the slot contains an item matching the equipped item
+            if (currentSlot.Item.ItemBase.Name == gameEquippedItem)
+            {
+                // Create updated item data with decreased quantity
+                var updatedItemData = currentSlot.Item.ItemData with { Quant = currentSlot.Item.ItemData.Quant - 1 };
+
+                if (updatedItemData.Quant <= 0)
+                {
+                    // Remove the item completely
+                    slots[i] = currentSlot with { Item = GDS.Core.Item.NoItem };
+                    Debug.Log($"Item '{gameEquippedItem}' completely consumed and removed from inventory.");
+                }
+                else
+                {
+                    // Update the slot with the new quantity
+                    slots[i] = currentSlot with
+                    {
+                        Item = currentSlot.Item with { ItemData = updatedItemData }
+                    };
+                    Debug.Log($"Item '{gameEquippedItem}' quantity decreased to {updatedItemData.Quant}.");
+                }
+
+                textInventoryConsums = Store.Instance.getMainInventoryConsumables();
+                inventorConsumsAmounts = Store.Instance.getMainInventoryConsumablesAmounts();
+                UpdateInventoryUI(textInventoryConsums, inventorConsumsAmounts);
+                return; // Exit after updating the inventory
+            }
+        }
+
+        // If no matching item is found
+        Debug.LogWarning($"Item '{gameEquippedItem}' not found in the inventory.");
+    }
+
+    private int calculateFinalDamage(int rawDamage)
+    {
+        // Check if armor can fully absorb the damage
+        if (rawDamage / 2 > gameArmorValue)
+        {
+            return rawDamage - gameArmorValue; // Flat armor reduction
+        }
+        else
+        {
+            // Scale the remaining damage using a percentage reduction
+            return Mathf.Max(1, rawDamage / 2); // Ensure the minimum damage is at least 1
+        }
+    }
+
 
     IEnumerator HandleGameOver()
     {
@@ -623,18 +873,18 @@ public class BattleManager : MonoBehaviour
 
     public void weaponsSelected()
     {
-        UpdateInventoryUI(textInventoryWeapons);
+        UpdateInventoryUI(textInventoryWeapons, inventoryWeaponsAmounts);
     }
     public void consumablesSelected()
     {
-        UpdateInventoryUI(textInventoryConsums);
+        UpdateInventoryUI(textInventoryConsums, inventorConsumsAmounts);
     }
     public void materialsSelected()
     {
-        UpdateInventoryUI(textInventoryMats);
+        UpdateInventoryUI(textInventoryMats, inventoryMatsAmounts);
     }
 
-    private void UpdateInventoryUI(string[] items)
+    private void UpdateInventoryUI(string[] itemNames, int[] amounts)
     {
         // Clear any existing buttons in the content area
         foreach (Transform child in contentTransform)
@@ -643,24 +893,37 @@ public class BattleManager : MonoBehaviour
         }
 
         // Instantiate a button for each item in the selected category
-        foreach (var item in items)
+        for (int i = 0; i < itemNames.Length; i++)
         {
+            string itemName = itemNames[i];
+            int itemAmount = amounts[i];
             // Instantiate the button prefab
             Button newButton = Instantiate(buttonPrefab, contentTransform);
 
             // Set the button's text
-            TextMeshProUGUI buttonText = newButton.GetComponentInChildren<TextMeshProUGUI>();
+            TextMeshProUGUI buttonText = newButton.transform.Find("ItemNameText")?.GetComponent<TextMeshProUGUI>();
             if (buttonText != null)
             {
-                buttonText.text = item;
+                buttonText.text = itemName;
             }
             else
             {
                 Debug.LogWarning("TextMeshProUGUI component not found in button prefab.");
             }
 
+            // Set the amount text
+            TextMeshProUGUI amountText = newButton.transform.Find("ItemAmountText")?.GetComponent<TextMeshProUGUI>();
+            if (amountText != null)
+            {
+                amountText.text = "("+itemAmount.ToString()+")"; // itemAmount holds the amount
+            }
+            else
+            {
+                Debug.LogWarning("ItemAmountText component not found in button prefab.");
+            }
+
             // Find the item in the database
-            var dbItem = DB.AllBases.FirstOrDefault(dbBase => dbBase.Name == item);
+            var dbItem = DB.AllBases.FirstOrDefault(dbBase => dbBase.Name == itemName);
             if (dbItem != null)
             {
                 // Find the child object explicitly named "Image" (or your specific naming convention)
@@ -702,11 +965,11 @@ public class BattleManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"Item not found in database: {item}");
+                Debug.LogWarning($"Item not found in database: {itemName}");
             }
 
             // Add a listener for button clicks
-            newButton.onClick.AddListener(() => OnItemSelected(item));
+            newButton.onClick.AddListener(() => OnItemSelected(itemName));
         }
     }
 
@@ -716,6 +979,8 @@ public class BattleManager : MonoBehaviour
     {
         // For example, display the selected item's name in the TextInventory
         //TextInventory.text = "Selected Item: " + item;
+        equippedItemText.SetText(item);
+        gameEquippedItem = item;
         Debug.Log(item);
     }
 }

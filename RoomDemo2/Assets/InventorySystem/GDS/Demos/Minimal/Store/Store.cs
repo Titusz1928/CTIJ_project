@@ -156,5 +156,51 @@ namespace GDS.Minimal {
             return materialsList.ToArray(); // Convert the list to an array and return it
         }
 
+
+        public int[] getMainInventoryWeaponsAmounts()
+        {
+            List<int> weaponsAmountsList = new List<int>(); // Create a list to hold item amounts
+
+            foreach (var slot in MainInventory.Slots)
+            {
+                if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Weapon1H)
+                {
+                    weaponsAmountsList.Add(slot.Item.ItemData.Quant); // Add the item amount to the list
+                }
+            }
+
+            return weaponsAmountsList.ToArray(); // Convert the list to an array and return it
+        }
+
+        public int[] getMainInventoryConsumablesAmounts()
+        {
+            List<int> consumablesAmountsList = new List<int>(); // Create a list to hold item amounts
+
+            foreach (var slot in MainInventory.Slots)
+            {
+                if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Consumable)
+                {
+                    consumablesAmountsList.Add(slot.Item.ItemData.Quant); // Add the item amount to the list
+                }
+            }
+
+            return consumablesAmountsList.ToArray(); // Convert the list to an array and return it
+        }
+
+        public int[] getMainInventoryMaterialsAmounts()
+        {
+            List<int> materialsAmountsList = new List<int>(); // Create a list to hold item amounts
+
+            foreach (var slot in MainInventory.Slots)
+            {
+                if (slot.Item is not NoItem && slot.Item.Class() == ItemClass.Material)
+                {
+                    materialsAmountsList.Add(slot.Item.ItemData.Quant); // Add the item amount to the list
+                }
+            }
+
+            return materialsAmountsList.ToArray(); // Convert the list to an array and return it
+        }
+
     }
 }
