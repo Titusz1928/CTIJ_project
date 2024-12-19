@@ -48,15 +48,13 @@ namespace GDS.Minimal {
         /// Resets the Store state
         /// Sets the inventory state by creating items and adding them to the list
         /// </summary>
-        void Reset() {
+        public void Reset() {
             Debug.Log($"Reseting ".Yellow() + "[Basic Store]".Gray());
             MainInventory.SetState(
                   Create(BaseId.Apple, Rarity.Common),
                   Create(BaseId.Apple, Rarity.Common),
-                  Create(BaseId.Apple, Rarity.Common),
-                  Create(BaseId.LeatherArmor,Rarity.Unique),
-                  Create(BaseId.WarriorHelmet, Rarity.Rare),
-                  Create(BaseId.SteelBoots, Rarity.Legendary)
+                  Create(BaseId.Apple, Rarity.Common)
+
             );
         }
 

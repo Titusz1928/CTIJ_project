@@ -19,8 +19,10 @@ namespace GDS.Sample {
             new (SteelArmor, "SteelArmor", "Shared/Icons/steelarmor", false, Size2x3, ItemClass.BodyArmor),
             new (ShortSword, "ShortSword", "Shared/Icons/sword", false, Size1x2, ItemClass.Weapon1H),
             new (Apple, "Apple", "Shared/Icons/apple", true, Size1x1, ItemClass.Consumable),
+            new (Club,"Club","Shared/Icons/club",false,Size1x1,ItemClass.Weapon1H),
             new (Wood, "Wood", "Shared/Icons/wood", true, Size1x1, ItemClass.Material),
-            new (Stone, "Stone","Shared/Icons/stone",true,Size1x1,ItemClass.Material)
+            new (Stone, "Stone","Shared/Icons/stone",true,Size1x1,ItemClass.Material),
+            new (CookedPorkchop,"CookedPorkchop","Shared/Icons/cookedporkchop",true,Size1x1,ItemClass.Consumable)
         };
 
         public static Dictionary<BaseId, SampleItemBase> AllBasesDict = AllBases.ToDictionary(x => x.BaseId);
@@ -44,7 +46,9 @@ namespace GDS.Sample {
         ShortSword,
         Apple,
         Wood,
-        Stone
+        Stone,
+        Club,
+        CookedPorkchop
     }
 
     /// <summary>

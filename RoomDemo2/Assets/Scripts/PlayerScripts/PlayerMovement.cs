@@ -7,8 +7,8 @@ using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
     Rigidbody rb;
-    [SerializeField] float movementSpeed = 3f;
-    [SerializeField] float sprintMultiplier = 1.5f;
+    [SerializeField] float movementSpeed = 2.9f;
+    [SerializeField] float sprintMultiplier = 1.6f;
     [SerializeField] float sneakMultiplier = 0.5f;
     [SerializeField] float jumpForce = 3f;
     [SerializeField] float rotationSpeed = 2f;
@@ -31,6 +31,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] GameObject attractionObjectPrefab; // Prefab for the attraction object
     [SerializeField] float sprintAttractionDistance = 10f; // Attraction radius when sprinting
     [SerializeField] float jumpAttractionDistance = 15f; // Attraction radius when jumping
+
+
+
+    [SerializeField] private PauseMenuManager pauseManager;
+
+
 
     [SerializeField] GameObject battleCanvas; // Reference to the BattleCanvas
 
@@ -87,8 +93,11 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                currentStamina += staminaRegenRate * Time.deltaTime;
-                if (currentStamina > maxStamina) currentStamina = maxStamina;
+                if (!isSprinting)
+                {
+                    currentStamina += staminaRegenRate * Time.deltaTime;
+                    if (currentStamina > maxStamina) currentStamina = maxStamina;
+                }
             }
 
             // Sneaking
@@ -117,13 +126,15 @@ public class PlayerMovement : MonoBehaviour
             stamBar.value = currentStamina;
 
             // Mouse rotation
-            float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
-            mouseY += Input.GetAxis("Mouse Y") * rotationSpeed;
-            mouseY = Mathf.Clamp(mouseY, -viewRange, viewRange);
+            if (!pauseManager.isPaused)
+            {
+                float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
+                mouseY += Input.GetAxis("Mouse Y") * rotationSpeed;
+                mouseY = Mathf.Clamp(mouseY, -viewRange, viewRange);
 
-            transform.Rotate(Vector3.up * mouseX);
-            Camera.main.transform.localRotation = Quaternion.Euler(-mouseY, 0f, 0f);
-
+                transform.Rotate(Vector3.up * mouseX);
+                Camera.main.transform.localRotation = Quaternion.Euler(-mouseY, 0f, 0f);
+            }
             // Jumping
             if (Input.GetButtonDown("Jump") && currentStamina >= 10 && IsGrounded())
             {
@@ -135,6 +146,47 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+
+    public void setStamina(float newStamina)
+    {
+        currentStamina = newStamina;
+    }
+
+
+    public void DecreaseStamina(float amount)
+    {
+        currentStamina -= amount;
+
+        // Clamp health to a minimum of 0
+        currentStamina = Mathf.Max(currentStamina, 0);
+
+        // Update the slider
+        if (stamBar != null)
+        {
+            stamBar.value = currentStamina;
+        }
+
+        Debug.Log($"Player stamina decreased by {amount}. Current stamina: {currentStamina}");
+    }
+
+    public void IncreaseStamina(float amount)
+    {
+
+        currentStamina += amount;
+
+        // Clamp health to a maximum of maxHealth
+        currentStamina = Mathf.Min(currentStamina, maxStamina);
+
+        // Update the slider
+        if (stamBar != null)
+        {
+            stamBar.value = currentStamina;
+        }
+
+        Debug.Log($"Player stamina increased by {amount}. Current stamina: {currentStamina}");
+    }
+
+
 
     /*private void OnCollisionEnter(Collision collision)
     {

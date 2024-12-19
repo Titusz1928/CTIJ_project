@@ -14,8 +14,8 @@ public class NavigationScript : MonoBehaviour, IEnemy
     public float MaxPossibleHealth => 80f;
 
 
-    public float MinPossibleDamage => 10f; // Minimum possible damage
-    public float MaxPossibleDamage => 20f;
+    public float MinPossibleDamage => 25f; // Minimum possible damage
+    public float MaxPossibleDamage => 40f;
 
     // State variables
     private enum EnemyState { Wandering, Searching, Chasing, Investigating }

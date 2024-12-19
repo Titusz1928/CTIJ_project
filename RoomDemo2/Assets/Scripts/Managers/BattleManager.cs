@@ -27,6 +27,7 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI logText;
 
     //Inventory
+    [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private GameObject battleInventory;
     private string[] textInventoryWeapons;
     private string[] textInventoryConsums;
@@ -42,6 +43,7 @@ public class BattleManager : MonoBehaviour
 
     private int gameArmorValue;
     private string gameEquippedItem = "";
+    private float gamePlayerStamina = 100;
     /// 
 
 
@@ -65,6 +67,7 @@ public class BattleManager : MonoBehaviour
     private Dictionary<int, EnemyDamageManager> enemyDamageManagersMap = new Dictionary<int, EnemyDamageManager>();
 
     [SerializeField] private PlayerHealth playerHealthManager; // Track player health manager
+    [SerializeField] private PlayerMovement playerMovementManager; //for stamina managing
 
     //FOR ENEMY TARGETING
     private int targetedEnemyIndex = -1;
@@ -72,6 +75,10 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle(List<IEnemy> enemies, float playerHealth, float playerStamina)
     {
+        if (inventoryManager.isInventoryOpen)
+        {
+            inventoryManager.ToggleInventory();
+        }
         //setting up battle log (by default it appears first)
         logText.gameObject.SetActive(true);
         logTitle.gameObject.SetActive(true);
@@ -88,8 +95,10 @@ public class BattleManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true; // Make the cursor visible again
 
-        //hiding gameover text and clearing arrays
+        //hiding and clearing texts and arrays
         gameOverText.gameObject.SetActive(false);
+        equippedItemText.SetText("-");
+        gameEquippedItem = "";
         enemyHealthManagers.Clear();
         enemyDamageManagersMap.Clear();
 
@@ -105,16 +114,22 @@ public class BattleManager : MonoBehaviour
         // Activate the BattleCanvas
         battleCanvas.SetActive(true);
 
+        int playerHealthRoundedUp= Mathf.CeilToInt(playerHealth);
+        int playerStaminaRoundedUp = Mathf.CeilToInt(playerStamina);
         // Display player health and stamina text
-        playerHealthText.text = $"{Mathf.RoundToInt(playerHealth)}/100";
-        playerStaminaText.text = $"{Mathf.RoundToInt(playerStamina)}/100";
+        playerHealthText.text = $"{Mathf.RoundToInt(playerHealthRoundedUp)}/100";
+        playerStaminaText.text = $"{Mathf.RoundToInt(playerStaminaRoundedUp)}/100";
 
         // Update sliders with the current health and stamina values
         if (playerHealthSlider != null)
             playerHealthSlider.value = playerHealth;
 
+        gamePlayerStamina = playerStamina;
         if (playerStaminaSlider != null)
             playerStaminaSlider.value = playerStamina;
+
+        playerHealthSlider.gameObject.SetActive(true);
+        playerStaminaSlider.gameObject.SetActive(true);
 
         // Assign sprites to enemy UI slots, activate them, and create health sliders
         int enemyCount = Mathf.Min(enemies.Count, enemyImages.Count);
@@ -213,7 +228,7 @@ public class BattleManager : MonoBehaviour
                         if (healthInfoText != null)
                         {
                             string enemyName = enemyObject.GetComponent<NavigationScript>() != null ? "Soldier" : "Guard";
-                            healthInfoText.text = $"{enemyName}\n{Mathf.RoundToInt(currentHealth)}/{Mathf.RoundToInt(maxHealth)}";
+                            healthInfoText.text = $"{enemyName}\n{Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
                         }
                     }
                 }
@@ -229,7 +244,7 @@ public class BattleManager : MonoBehaviour
         }
 
         // Prepare and display enemy info
-        string battleInfo = "Enemies in Battle:\n";
+/*        string battleInfo = "Enemies in Battle:\n";
         foreach (IEnemy enemy in enemies)
         {
             GameObject enemyObject = (enemy as MonoBehaviour)?.gameObject;
@@ -247,8 +262,8 @@ public class BattleManager : MonoBehaviour
                     battleInfo += $"- {enemy.GetType().Name} (State: {enemy.getCurrentState()}, Health: Unknown)\n";
                 }
             }
-        }
-        infoText.text = battleInfo;
+        }*/
+        infoText.text = "You were ambushed!";
     }
 
     public void calculateInventory()
@@ -281,7 +296,7 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Failed to parse '{helmetname}' as a BaseId.");
+            Debug.Log($"Failed to parse '{helmetname}' as a BaseId.");
         }
 
         string bodyarmorname = armorInventory.BodyArmorSlot.ItemBase.Id.ToString();
@@ -301,7 +316,7 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Failed to parse '{bodyarmorname}' as a BaseId.");
+            Debug.Log($"Failed to parse '{bodyarmorname}' as a BaseId.");
         }
 
         string bootname = armorInventory.BootsSlot.ItemBase.Id.ToString();
@@ -321,7 +336,7 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Failed to parse '{bootname}' as a BaseId.");
+            Debug.Log($"Failed to parse '{bootname}' as a BaseId.");
         }
 
         armorValueText.SetText(gameArmorValue.ToString());
@@ -462,11 +477,16 @@ public class BattleManager : MonoBehaviour
         Debug.Log("enemy nr. " + targetedEnemyIndex + ", health=" + enemyHealth);
         if (enemyHealth != null && isAttacking)
         {
+
+
             Debug.Log($"Processing enemy {targetedEnemyIndex + 1}/{enemyHealthManagers.Count} with initial health: {enemyHealth.CurrentHealth}");
 
             // Decrease health using the method
 
-            enemyHealth.DecreaseHealth(60);
+            float damageToEnemy = calculateDamageToEnemy();
+            //int damageToEnemy = 60;
+
+            enemyHealth.DecreaseHealth(damageToEnemy);
             Debug.Log($"Enemy {targetedEnemyIndex + 1} health decreased. Current health: {enemyHealth.CurrentHealth}");
 
             // Update UI slider
@@ -488,7 +508,7 @@ public class BattleManager : MonoBehaviour
                     string enemyName = lines.Length > 0 ? lines[0] : "Unknown";
 
                     // Update the text while keeping the enemy name
-                    healthInfoText.text = $"{enemyName}\n{Mathf.RoundToInt(enemyHealth.CurrentHealth)}/{Mathf.RoundToInt(enemyHealth.maxHealth)}";
+                    healthInfoText.text = $"{enemyName}\n{Mathf.CeilToInt(enemyHealth.CurrentHealth)}/{Mathf.CeilToInt(enemyHealth.maxHealth)}";
                     Debug.Log($"Enemy {targetedEnemyIndex + 1} UI health text updated to: {healthInfoText.text}");
                 }
             }
@@ -631,13 +651,103 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        //turn ended, player gains 5 stamina by default
+        gamePlayerStamina = gamePlayerStamina + 5;
+        updatePlayerStaminaDisplay();
+
         // Update info text for the next turn
-        gameEquippedItem = "";
         infoText.text = "Turn ended. Prepare for the next move!";
-        equippedItemText.SetText("-");
         Debug.Log("End-turn sequence complete. Info text updated.");
 
     }
+
+    private float calculateDamageToEnemy()
+    {
+        bool isCritical = false;
+        if (string.IsNullOrEmpty(gameEquippedItem))
+        {
+            Debug.LogWarning("No item is equipped to use.");
+            return 0f;
+        }
+        try
+        {
+            // Parse the string value of gameEquippedItem to the corresponding BaseId enum
+            if (Enum.TryParse(gameEquippedItem, out BaseId itemId))
+            {
+                // Check if the item exists in the Effects dictionary
+                if (WeaponManager.Effects.TryGetValue(itemId, out var effect))
+                {
+                    if (gamePlayerStamina < effect.staminaUse)
+                        return 0f;
+
+                    float chance = effect.critchance;
+                    float baseDamage = effect.damage;
+                    float multiplier = effect.critmultiplier;
+                    gamePlayerStamina = gamePlayerStamina - effect.staminaUse;
+                    gamePlayerStamina = Mathf.Max(gamePlayerStamina, 0);
+                    updatePlayerStaminaDisplay();
+
+                    float randomValue = UnityEngine.Random.Range(0f, 100f);
+                    float damage;
+
+                    if (randomValue <= chance) // Critical hit occurs
+                    {
+                        damage = baseDamage * multiplier; // Apply critical multiplier
+                        Debug.Log($"Critical hit ({damage}) inflicted with {gameEquippedItem}");
+                        isCritical = true;
+                    }
+                    else
+                    {
+                        damage = baseDamage; // Normal damage
+                        Debug.Log($"Enemy was hit ({damage}) with {gameEquippedItem}");
+                    }
+
+                    // Apply randomness to the damage
+                    float randomFactor = baseDamage * 0.05f; // 5% of the base damage
+                    float minDamage = damage - randomFactor;
+                    float maxDamage = damage + randomFactor;
+                    float finalDamage = UnityEngine.Random.Range(minDamage, maxDamage);
+
+                    if(isCritical)
+                        infoText.SetText($"Critical damage inflicted ({Mathf.RoundToInt(finalDamage)}) with {gameEquippedItem}");
+                    infoText.SetText($"Enemy was hit ({Mathf.RoundToInt(finalDamage)}) with {gameEquippedItem}");
+                    return Mathf.RoundToInt(finalDamage); // Return rounded final damage
+                }
+                else
+                {
+                    Debug.LogWarning($"Item {gameEquippedItem} is not a weapon.");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Invalid item name: {gameEquippedItem}. Cannot parse to BaseId.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error using item {gameEquippedItem}: {ex.Message}");
+        }
+        return 0;
+    }
+
+    private void updatePlayerStaminaDisplay()
+    {
+        // Update player health UI
+        if (playerStaminaSlider != null)
+        {
+            playerStaminaSlider.value = gamePlayerStamina;
+            Debug.Log($"Player health slider updated to: {playerStaminaSlider.value}");
+        }
+
+        if (playerStaminaText != null)
+        {
+            int staminaRoundedUp = Mathf.CeilToInt(gamePlayerStamina);
+            playerStaminaText.text = $"{staminaRoundedUp}/100";
+            Debug.Log($"Player health text updated to: {playerStaminaText.text}");
+        }
+    }
+
+
 
     private void consumeItem()
     {
@@ -657,11 +767,14 @@ public class BattleManager : MonoBehaviour
                 if (ConsumableManager.Effects.TryGetValue(itemId, out var effect))
                 {
                     int healthToRestore = effect.health;
+                    gamePlayerStamina = gamePlayerStamina + effect.stamina;
+                    updatePlayerStaminaDisplay();
 
                     // Apply the health effect
                     playerHealthManager.IncreaseHealth(healthToRestore);
                     playerHealthSlider.value = playerHealthManager.getCurrentHealth();
-                    playerHealthText.text = $"{playerHealthManager.getCurrentHealth()}/100";
+                    int healthRoundedUp = Mathf.CeilToInt(playerHealthManager.getCurrentHealth());
+                    playerHealthText.text = $"{healthRoundedUp}/100";
 
                     removeItemFromInventory();
 
@@ -714,6 +827,8 @@ public class BattleManager : MonoBehaviour
                     // Remove the item completely
                     slots[i] = currentSlot with { Item = GDS.Core.Item.NoItem };
                     Debug.Log($"Item '{gameEquippedItem}' completely consumed and removed from inventory.");
+                    gameEquippedItem = "";
+                    equippedItemText.SetText("-");
                 }
                 else
                 {
@@ -755,7 +870,11 @@ public class BattleManager : MonoBehaviour
     {
         // Display the Game Over text
         gameOverText.gameObject.SetActive(true);
+        playerHealthSlider.gameObject.SetActive(false);
+        playerStaminaSlider.gameObject.SetActive(false);
 
+        //reset the inventory
+        Store.Instance.Reset();
 
         // Wait for the specified time
         yield return new WaitForSeconds(5);
@@ -779,6 +898,8 @@ public class BattleManager : MonoBehaviour
 
     public void EndBattle()
     {
+        playerMovementManager.setStamina(gamePlayerStamina);
+        //playerMovementManager.
         if (battleCanvas != null)
         {
             battleCanvas.SetActive(false);

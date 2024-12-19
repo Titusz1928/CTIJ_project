@@ -1,3 +1,4 @@
+using GDS.Minimal;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +8,7 @@ public class PauseMenuManager : MonoBehaviour
 {
     public GameObject pauseMenuUI; // Assign the Pause Menu Panel in the Inspector
     public GameObject gameMenuUI;
-    private bool isPaused = false;
+    public bool isPaused = false;
 
     void Update()
     {
@@ -43,6 +44,7 @@ public class PauseMenuManager : MonoBehaviour
 
     public void LoadMainMenu()
     {
+        Store.Instance.Reset();
         Time.timeScale = 1f;         // Ensure game time is resumed
         SceneManager.LoadScene("MainMenu1"); // Replace with your actual Main Menu scene name
     }

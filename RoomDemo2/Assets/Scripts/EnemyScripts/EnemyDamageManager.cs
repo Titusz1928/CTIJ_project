@@ -5,8 +5,8 @@ using UnityEngine;
 public class EnemyDamageManager : MonoBehaviour
 {
 
-    [SerializeField] private float minDamage = 10f; // Minimum possible damage
-    [SerializeField] private float maxDamage = 20f; // Maximum possible damage
+    [SerializeField] private float minDamage = 20f; // Minimum possible damage
+    [SerializeField] private float maxDamage = 100f; // Maximum possible damage
 
     // Start is called before the first frame update
     void Start()
@@ -14,6 +14,7 @@ public class EnemyDamageManager : MonoBehaviour
         IEnemy enemy = GetComponent<IEnemy>();
         if (enemy != null)
         {
+            minDamage = enemy.MinPossibleDamage;
             // Randomize health within the enemy's defined range
             maxDamage = Random.Range(enemy.MinPossibleDamage, enemy.MaxPossibleDamage);
         }

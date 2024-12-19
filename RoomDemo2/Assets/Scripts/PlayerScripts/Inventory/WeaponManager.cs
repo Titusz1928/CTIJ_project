@@ -5,8 +5,10 @@ using UnityEngine;
 
 public class WeaponManager : MonoBehaviour
 {
-    public static readonly Dictionary<BaseId, int> Effects = new()
+    //damage,critmultiplier, critchance
+    public static readonly Dictionary<BaseId, (float damage,float critmultiplier, float critchance, float staminaUse)> Effects = new()
     {
-        { BaseId.ShortSword, 30 },
+        { BaseId.Club, (25f,1.5f,25f,5f) },
+        { BaseId.ShortSword, (50f,1.25f,40f,10f) }
     };
 }

@@ -6,8 +6,9 @@ using UnityEngine;
 public static class ConsumableManager
 {
     // Store effects as (health, stamina)
-    public static readonly Dictionary<BaseId, (int health, int stamina)> Effects = new() {
-        { BaseId.Apple, (20, 5) } // Apple restores 20 health and 5 stamina
+    public static readonly Dictionary<BaseId, (int health, float stamina)> Effects = new() {
+        { BaseId.Apple, (20, 20f) },
+        { BaseId.CookedPorkchop,(40,5f) }
         // Add more consumables here
     };
 

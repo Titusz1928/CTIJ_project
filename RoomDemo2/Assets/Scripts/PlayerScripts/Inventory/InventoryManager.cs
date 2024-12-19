@@ -9,9 +9,10 @@ public class InventoryManager : MonoBehaviour
 {
     public GameObject inventoryUI; // Reference to the inventory UI GameObject
     [SerializeField] private PlayerHealth playerHealth;
+    [SerializeField] private PlayerMovement playerMovementManger;
     [SerializeField] private ArmorInventory armorInventory;
 
-    private bool isInventoryOpen = false;
+    public bool isInventoryOpen = false;
 
     void Update()
     {
@@ -86,8 +87,9 @@ public class InventoryManager : MonoBehaviour
 
                 UpdateItemQuantity(draggedItem);
 
-                // Update the player's health
+                // Update the player's health and stamina
                 playerHealth.IncreaseHealth(effect.health);
+                playerMovementManger.IncreaseStamina(effect.stamina);
             }
             else
             {
@@ -152,10 +154,10 @@ public class InventoryManager : MonoBehaviour
         droppedObject.tag = "Pickable"; // Set the tag to "Pickable"
         droppedObject.layer = LayerMask.NameToLayer("PickableObjects"); // Set the layer to "PickableObjects"
 
-        // Set the Y-coordinate to 2.5 to ensure correct height
+        // Set the Y-coordinate to 1.5 to ensure correct height
         droppedObject.transform.position = new Vector3(droppedObject.transform.position.x, 1.5f, droppedObject.transform.position.z);
 
-        droppedObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        droppedObject.transform.localScale = prefab.transform.localScale;
 
         // Add required components to the instantiated object
         if (!droppedObject.TryGetComponent<Rigidbody>(out _))
