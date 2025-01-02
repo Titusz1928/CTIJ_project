@@ -1,3 +1,4 @@
+using GDS.Sample;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -45,6 +46,7 @@ public class HealthManager : MonoBehaviour
         if (currentHealth <= 0)
         {
             Debug.Log($"{gameObject.name} has died.");
+            HandleDrops();
             Destroy(gameObject); // Optionally, destroy the enemy
         }
     }
@@ -59,5 +61,65 @@ public class HealthManager : MonoBehaviour
         {
             healthSlider2.value = currentHealth;
         }
+    }
+
+    private void HandleDrops()
+    {
+        // Determine enemy type
+        string enemyType = gameObject.name.Replace("(Clone)", "").Trim(); // Adjust to remove (Clone)
+
+        // Get potential drops
+        var drops = EnemyManager.GetDrops(enemyType);
+
+        foreach (var (itemId, dropChance) in drops)
+        {
+            if (Random.value <= dropChance)
+            {
+                DropItem(itemId);
+            }
+        }
+    }
+
+    private void DropItem(BaseId itemId)
+    {
+        // Get the prefab for the item from the registry
+        var prefab = PrefabRegistry.Instance?.GetPrefab(itemId.ToString());
+        if (prefab == null)
+        {
+            Debug.LogError($"Prefab not found for item ID: {itemId}");
+            return;
+        }
+
+        // Drop position and rotation
+        Vector3 dropPosition = transform.position;
+        dropPosition.y = 1.5f; // Set Y coordinate to 1.5f
+        Quaternion randomRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+
+        // Instantiate the item
+        GameObject droppedItem = Instantiate(prefab, dropPosition, randomRotation);
+        Debug.Log($"Dropped object: {droppedItem.name} at {dropPosition}");
+        droppedItem.tag = "Pickable";
+        droppedItem.layer = LayerMask.NameToLayer("PickableObjects");
+
+        var particleSystem = droppedItem.GetComponentInChildren<ParticleSystem>();
+        if (particleSystem != null)
+        {
+            particleSystem.Play();
+        }
+
+        // Add necessary components if missing
+        if (!droppedItem.TryGetComponent<Rigidbody>(out _))
+        {
+            var rb = droppedItem.AddComponent<Rigidbody>();
+            rb.mass = 1f;
+        }
+
+        if (!droppedItem.TryGetComponent<BoxCollider>(out _))
+        {
+            var collider = droppedItem.AddComponent<BoxCollider>();
+            collider.size = new Vector3(0.3f, 0.3f, 0.3f);
+        }
+
+        Debug.Log($"Dropped {DB.AllBasesDict[itemId].Name}");
     }
 }

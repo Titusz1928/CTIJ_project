@@ -154,6 +154,13 @@ public class InventoryManager : MonoBehaviour
         droppedObject.tag = "Pickable"; // Set the tag to "Pickable"
         droppedObject.layer = LayerMask.NameToLayer("PickableObjects"); // Set the layer to "PickableObjects"
 
+        // Attach particle system (if available in prefab)
+        var particleSystem = droppedObject.GetComponentInChildren<ParticleSystem>();
+        if (particleSystem != null)
+        {
+            particleSystem.Play();
+        }
+
         // Set the Y-coordinate to 1.5 to ensure correct height
         droppedObject.transform.position = new Vector3(droppedObject.transform.position.x, 1.5f, droppedObject.transform.position.z);
 

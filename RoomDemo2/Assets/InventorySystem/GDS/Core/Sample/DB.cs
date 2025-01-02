@@ -22,7 +22,8 @@ namespace GDS.Sample {
             new (Club,"Club","Shared/Icons/club",false,Size1x1,ItemClass.Weapon1H),
             new (Wood, "Wood", "Shared/Icons/wood", true, Size1x1, ItemClass.Material),
             new (Stone, "Stone","Shared/Icons/stone",true,Size1x1,ItemClass.Material),
-            new (CookedPorkchop,"CookedPorkchop","Shared/Icons/cookedporkchop",true,Size1x1,ItemClass.Consumable)
+            new (CookedPorkchop,"CookedPorkchop","Shared/Icons/cookedporkchop",true,Size1x1,ItemClass.Consumable),
+            new (Goldcoin,"Goldcoin","Shared/Icons/goldcoin",true,Size1x1,ItemClass.Valuable)
         };
 
         public static Dictionary<BaseId, SampleItemBase> AllBasesDict = AllBases.ToDictionary(x => x.BaseId);
@@ -48,7 +49,8 @@ namespace GDS.Sample {
         Wood,
         Stone,
         Club,
-        CookedPorkchop
+        CookedPorkchop,
+        Goldcoin
     }
 
     /// <summary>
@@ -76,6 +78,7 @@ namespace GDS.Sample {
         Weapon1H,
         Consumable,
         Material,
+        Valuable
     }
 
     /// <summary>
