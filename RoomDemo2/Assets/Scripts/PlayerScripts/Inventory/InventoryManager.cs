@@ -11,6 +11,7 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private PlayerMovement playerMovementManger;
     [SerializeField] private ArmorInventory armorInventory;
+    [SerializeField] GameObject particleEffectPrefab;
 
     public bool isInventoryOpen = false;
 
@@ -154,11 +155,26 @@ public class InventoryManager : MonoBehaviour
         droppedObject.tag = "Pickable"; // Set the tag to "Pickable"
         droppedObject.layer = LayerMask.NameToLayer("PickableObjects"); // Set the layer to "PickableObjects"
 
-        // Attach particle system (if available in prefab)
-        var particleSystem = droppedObject.GetComponentInChildren<ParticleSystem>();
-        if (particleSystem != null)
+        // Adjust particle system size based on the prefab's scale or bounds
+        Vector3 prefabSize = prefab.transform.localScale;
+        Vector3 particleOffset = new Vector3(0, prefabSize.y * 0.5f, 0); // Offset for particles based on prefab height
+
+        // Instantiate the particle system at an adjusted position
+        GameObject particleSystemInstance = Instantiate(
+            particleEffectPrefab,
+            droppedObject.transform.position + particleOffset, // Offset to position particles above the object
+            Quaternion.identity
+        );
+
+        // Adjust particle system scale based on prefab size
+        particleSystemInstance.transform.localScale = prefabSize * 0.2f; // Scale particles relative to the prefab
+        particleSystemInstance.transform.SetParent(droppedObject.transform); // Make it a child of the dropped item
+
+        // Play the particle system (if not set to Play On Awake)
+        ParticleSystem ps = particleSystemInstance.GetComponent<ParticleSystem>();
+        if (ps != null)
         {
-            particleSystem.Play();
+            ps.Play();
         }
 
         // Set the Y-coordinate to 1.5 to ensure correct height

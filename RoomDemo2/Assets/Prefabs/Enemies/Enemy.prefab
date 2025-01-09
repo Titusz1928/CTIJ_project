@@ -727,6 +727,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   healthSlider2: {fileID: 4768931747841034519}
+  particleEffectPrefab: {fileID: 6000181358799060607, guid: b69d0821f230fbd418edb6cee5dce41b, type: 3}
 --- !u!114 &1174873813781751296
 MonoBehaviour:
   m_ObjectHideFlags: 0

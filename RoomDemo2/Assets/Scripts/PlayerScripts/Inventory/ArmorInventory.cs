@@ -19,6 +19,8 @@ public class ArmorInventory : MonoBehaviour
     [SerializeField] GameObject BootsImage1;
     [SerializeField] GameObject BootsImage2;
 
+    [SerializeField] GameObject particleEffectPrefab;
+
 
     // Equip an armor piece into the correct slot
     public void EquipArmor(Item armorItem)
@@ -133,7 +135,8 @@ public class ArmorInventory : MonoBehaviour
 
     public void DropHelmet()
     {
-        Debug.Log("attempting to drop helmet");
+        Debug.Log("Attempting to drop helmet");
+
         if (HelmetSlot == null || HelmetSlot == Item.NoItem)
         {
             Debug.Log("No helmet equipped to drop.");
@@ -158,7 +161,7 @@ public class ArmorInventory : MonoBehaviour
             UnityEngine.Random.Range(0f, 360f)  // Random Z rotation
         );
 
-        // Instantiate the helmet prefab at the desired position with random rotation
+        // Instantiate the prefab at the desired position with random rotation
         GameObject droppedHelmet = Instantiate(prefab, dropPosition, randomRotation);
 
         // Set the tag and layer for the dropped helmet
@@ -168,14 +171,14 @@ public class ArmorInventory : MonoBehaviour
         // Adjust the drop height
         droppedHelmet.transform.position = new Vector3(
             droppedHelmet.transform.position.x,
-            1.5f,
+            1.5f, // Adjusted height
             droppedHelmet.transform.position.z
         );
 
-        // Scale the dropped helmet if necessary
-        droppedHelmet.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        // Scale the dropped helmet based on prefab size
+        droppedHelmet.transform.localScale = prefab.transform.localScale;
 
-        // Add required Rigidbody component
+        // Add required Rigidbody component if needed
         if (!droppedHelmet.TryGetComponent<Rigidbody>(out _))
         {
             var rb = droppedHelmet.AddComponent<Rigidbody>();
@@ -186,7 +189,6 @@ public class ArmorInventory : MonoBehaviour
         var prefabCollider = prefab.GetComponent<BoxCollider>();
         if (prefabCollider != null)
         {
-            Debug.Log("Collider found for helmet prefab.");
             BoxCollider droppedCollider = droppedHelmet.GetComponent<BoxCollider>();
             if (droppedCollider == null)
             {
@@ -197,7 +199,6 @@ public class ArmorInventory : MonoBehaviour
         }
         else
         {
-            Debug.Log("No collider found on helmet prefab. Adding default collider.");
             var collider = droppedHelmet.AddComponent<BoxCollider>();
             collider.size = new Vector3(0.3f, 0.3f, 0.3f);
         }
@@ -206,6 +207,26 @@ public class ArmorInventory : MonoBehaviour
         if (!droppedHelmet.TryGetComponent<GenericPickableAction>(out _))
         {
             droppedHelmet.AddComponent<GenericPickableAction>();
+        }
+
+        // Particle effect for dropped helmet
+        Vector3 prefabSize = prefab.transform.localScale;
+        Vector3 particleOffset = new Vector3(0, prefabSize.y * 0.5f, 0); // Adjust for the height
+
+        GameObject particleSystemInstance = Instantiate(
+            particleEffectPrefab,
+            droppedHelmet.transform.position + particleOffset,
+            Quaternion.identity
+        );
+
+        particleSystemInstance.transform.localScale = prefabSize * 0.2f; // Scale particles relative to the prefab size
+        particleSystemInstance.transform.SetParent(droppedHelmet.transform); // Make it a child of the dropped helmet
+
+        // Play particle system
+        ParticleSystem ps = particleSystemInstance.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Play();
         }
 
         // Clear the equipped helmet slot
@@ -217,7 +238,6 @@ public class ArmorInventory : MonoBehaviour
         Sprite emptySlotSprite = Resources.Load<Sprite>(emptySlotPath);
         if (emptySlotSprite != null)
         {
-            // Set the UI images to the empty slot icon
             HelmetImage1.GetComponent<UnityEngine.UI.Image>().sprite = emptySlotSprite;
             HelmetImage2.GetComponent<UnityEngine.UI.Image>().sprite = emptySlotSprite;
             Debug.Log("Helmet slot set to empty icon.");
@@ -230,14 +250,14 @@ public class ArmorInventory : MonoBehaviour
 
     public void DropBodyArmor()
     {
-        Debug.Log("attempting to drop body armor");
+        Debug.Log("Attempting to drop body armor");
+
         if (BodyArmorSlot == null || BodyArmorSlot == Item.NoItem)
         {
-            Debug.Log("No helmet equipped to drop.");
+            Debug.Log("No body armor equipped to drop.");
             return;
         }
 
-        // Get the prefab associated with the helmet's ID
         var prefab = PrefabRegistry.Instance?.GetPrefab(BodyArmorSlot.ItemBase.Id);
         if (prefab == null)
         {
@@ -245,45 +265,35 @@ public class ArmorInventory : MonoBehaviour
             return;
         }
 
-        // Determine the drop position relative to the player
         Vector3 dropPosition = transform.position + transform.forward;
-
-        // Generate a random rotation
         Quaternion randomRotation = Quaternion.Euler(
-            UnityEngine.Random.Range(0f, 360f), // Random X rotation
-            UnityEngine.Random.Range(0f, 360f), // Random Y rotation
-            UnityEngine.Random.Range(0f, 360f)  // Random Z rotation
+            UnityEngine.Random.Range(0f, 360f),
+            UnityEngine.Random.Range(0f, 360f),
+            UnityEngine.Random.Range(0f, 360f)
         );
 
-        // Instantiate the helmet prefab at the desired position with random rotation
         GameObject droppedBodyArmor = Instantiate(prefab, dropPosition, randomRotation);
 
-        // Set the tag and layer for the dropped helmet
         droppedBodyArmor.tag = "Pickable";
         droppedBodyArmor.layer = LayerMask.NameToLayer("PickableObjects");
 
-        // Adjust the drop height
         droppedBodyArmor.transform.position = new Vector3(
             droppedBodyArmor.transform.position.x,
             1.5f,
             droppedBodyArmor.transform.position.z
         );
 
-        // Scale the dropped helmet if necessary
-        droppedBodyArmor.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        droppedBodyArmor.transform.localScale = prefab.transform.localScale;
 
-        // Add required Rigidbody component
         if (!droppedBodyArmor.TryGetComponent<Rigidbody>(out _))
         {
             var rb = droppedBodyArmor.AddComponent<Rigidbody>();
             rb.mass = 1f;
         }
 
-        // Add BoxCollider to the dropped helmet if needed
         var prefabCollider = prefab.GetComponent<BoxCollider>();
         if (prefabCollider != null)
         {
-            Debug.Log("Collider found for body armor prefab.");
             BoxCollider droppedCollider = droppedBodyArmor.GetComponent<BoxCollider>();
             if (droppedCollider == null)
             {
@@ -294,27 +304,41 @@ public class ArmorInventory : MonoBehaviour
         }
         else
         {
-            Debug.Log("No collider found on body armor prefab. Adding default collider.");
             var collider = droppedBodyArmor.AddComponent<BoxCollider>();
             collider.size = new Vector3(0.3f, 0.3f, 0.3f);
         }
 
-        // Add the GenericPickableAction component if it's not already present
         if (!droppedBodyArmor.TryGetComponent<GenericPickableAction>(out _))
         {
             droppedBodyArmor.AddComponent<GenericPickableAction>();
         }
 
-        // Clear the equipped helmet slot
+        // Particle effect
+        Vector3 prefabSize = prefab.transform.localScale;
+        Vector3 particleOffset = new Vector3(0, prefabSize.y * 0.5f, 0);
+
+        GameObject particleSystemInstance = Instantiate(
+            particleEffectPrefab,
+            droppedBodyArmor.transform.position + particleOffset,
+            Quaternion.identity
+        );
+
+        particleSystemInstance.transform.localScale = prefabSize * 0.2f;
+        particleSystemInstance.transform.SetParent(droppedBodyArmor.transform);
+
+        ParticleSystem ps = particleSystemInstance.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Play();
+        }
+
         Debug.Log($"Dropped body armor: {BodyArmorSlot.ItemBase.Name}");
         BodyArmorSlot = Item.NoItem;
 
-        // Load the empty slot icon
         string emptySlotPath = "InventorySystem/GDS/Resources/Shared/Icons/Equipment/64/body-armor.png";
         Sprite emptySlotSprite = Resources.Load<Sprite>(emptySlotPath);
         if (emptySlotSprite != null)
         {
-            // Set the UI images to the empty slot icon
             BodyArmorImage1.GetComponent<UnityEngine.UI.Image>().sprite = emptySlotSprite;
             BodyArmorImage2.GetComponent<UnityEngine.UI.Image>().sprite = emptySlotSprite;
             Debug.Log("Body armor slot set to empty icon.");
@@ -327,14 +351,14 @@ public class ArmorInventory : MonoBehaviour
 
     public void DropBoots()
     {
-        Debug.Log("attempting to drop boots");
+        Debug.Log("Attempting to drop boots");
+
         if (BootsSlot == null || BootsSlot == Item.NoItem)
         {
             Debug.Log("No boots equipped to drop.");
             return;
         }
 
-        // Get the prefab associated with the helmet's ID
         var prefab = PrefabRegistry.Instance?.GetPrefab(BootsSlot.ItemBase.Id);
         if (prefab == null)
         {
@@ -342,45 +366,35 @@ public class ArmorInventory : MonoBehaviour
             return;
         }
 
-        // Determine the drop position relative to the player
         Vector3 dropPosition = transform.position + transform.forward;
-
-        // Generate a random rotation
         Quaternion randomRotation = Quaternion.Euler(
-            UnityEngine.Random.Range(0f, 360f), // Random X rotation
-            UnityEngine.Random.Range(0f, 360f), // Random Y rotation
-            UnityEngine.Random.Range(0f, 360f)  // Random Z rotation
+            UnityEngine.Random.Range(0f, 360f),
+            UnityEngine.Random.Range(0f, 360f),
+            UnityEngine.Random.Range(0f, 360f)
         );
 
-        // Instantiate the helmet prefab at the desired position with random rotation
         GameObject droppedBoots = Instantiate(prefab, dropPosition, randomRotation);
 
-        // Set the tag and layer for the dropped helmet
         droppedBoots.tag = "Pickable";
         droppedBoots.layer = LayerMask.NameToLayer("PickableObjects");
 
-        // Adjust the drop height
         droppedBoots.transform.position = new Vector3(
             droppedBoots.transform.position.x,
             1.5f,
             droppedBoots.transform.position.z
         );
 
-        // Scale the dropped helmet if necessary
-        droppedBoots.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        droppedBoots.transform.localScale = prefab.transform.localScale;
 
-        // Add required Rigidbody component
         if (!droppedBoots.TryGetComponent<Rigidbody>(out _))
         {
             var rb = droppedBoots.AddComponent<Rigidbody>();
             rb.mass = 1f;
         }
 
-        // Add BoxCollider to the dropped helmet if needed
         var prefabCollider = prefab.GetComponent<BoxCollider>();
         if (prefabCollider != null)
         {
-            Debug.Log("Collider found for body armor prefab.");
             BoxCollider droppedCollider = droppedBoots.GetComponent<BoxCollider>();
             if (droppedCollider == null)
             {
@@ -391,30 +405,44 @@ public class ArmorInventory : MonoBehaviour
         }
         else
         {
-            Debug.Log("No collider found on body armor prefab. Adding default collider.");
             var collider = droppedBoots.AddComponent<BoxCollider>();
             collider.size = new Vector3(0.3f, 0.3f, 0.3f);
         }
 
-        // Add the GenericPickableAction component if it's not already present
         if (!droppedBoots.TryGetComponent<GenericPickableAction>(out _))
         {
             droppedBoots.AddComponent<GenericPickableAction>();
         }
 
-        // Clear the equipped helmet slot
-        Debug.Log($"Dropped boot: {BootsSlot.ItemBase.Name}");
+        // Particle effect
+        Vector3 prefabSize = prefab.transform.localScale;
+        Vector3 particleOffset = new Vector3(0, prefabSize.y * 0.5f, 0);
+
+        GameObject particleSystemInstance = Instantiate(
+            particleEffectPrefab,
+            droppedBoots.transform.position + particleOffset,
+            Quaternion.identity
+        );
+
+        particleSystemInstance.transform.localScale = prefabSize * 0.2f;
+        particleSystemInstance.transform.SetParent(droppedBoots.transform);
+
+        ParticleSystem ps = particleSystemInstance.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Play();
+        }
+
+        Debug.Log($"Dropped boots: {BootsSlot.ItemBase.Name}");
         BootsSlot = Item.NoItem;
 
-        // Load the empty slot icon
         string emptySlotPath = "InventorySystem/GDS/Resources/Shared/Icons/Equipment/64/boots.png";
         Sprite emptySlotSprite = Resources.Load<Sprite>(emptySlotPath);
         if (emptySlotSprite != null)
         {
-            // Set the UI images to the empty slot icon
             BootsImage1.GetComponent<UnityEngine.UI.Image>().sprite = emptySlotSprite;
-            BootsImage1.GetComponent<UnityEngine.UI.Image>().sprite = emptySlotSprite;
-            Debug.Log("Boot slot set to empty icon.");
+            BootsImage2.GetComponent<UnityEngine.UI.Image>().sprite = emptySlotSprite;
+            Debug.Log("Boots slot set to empty icon.");
         }
         else
         {
