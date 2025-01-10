@@ -7,6 +7,7 @@ public class StickFigureSpawnManager : MonoBehaviour
 {
     public Transform player;  // Reference to the player
     public GameObject enemyPrefab;  // The enemy prefab to spawn
+    public GameObject dogEnemyPrefab;
     public float checkInterval = 5f;  // Time interval for checking the enemy count
     public float maxSpawnRadius = 100f;  // Max radius within which to spawn enemies around the player
     public float minSpawnRadius = 50f;   // Min radius outside which to spawn enemies from the player
@@ -22,16 +23,24 @@ public class StickFigureSpawnManager : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(checkInterval);  // Wait for the specified interval
+            yield return new WaitForSeconds(checkInterval); // Wait for the specified interval
 
             // Count the enemies within the specified radius around the player
             int enemyCount = 0;
             Collider[] hitColliders = Physics.OverlapSphere(player.position, maxSpawnRadius);
+
             foreach (var hitCollider in hitColliders)
             {
-                if (hitCollider.CompareTag("Enemy"))  // Assuming enemies have the tag "Enemy"
+                if (hitCollider.CompareTag("Enemy")) // Check if the object has the "Enemy" tag
                 {
-                    enemyCount++;
+                    // Check if the object's name matches the enemy prefab's name
+                    string prefabName = enemyPrefab.name; // Replace 'enemyPrefab' with your actual prefab variable
+                    string colliderName = hitCollider.gameObject.name.Replace("(Clone)", "").Trim();
+
+                    if (colliderName == prefabName)
+                    {
+                        enemyCount++;
+                    }
                 }
             }
 
@@ -42,6 +51,7 @@ public class StickFigureSpawnManager : MonoBehaviour
             }
         }
     }
+
 
     private void SpawnEnemies(int count)
     {
@@ -59,9 +69,24 @@ public class StickFigureSpawnManager : MonoBehaviour
             while (Vector3.Distance(randomDirection, player.position) < 50f ||
                    !NavMesh.SamplePosition(randomDirection, out hit, 10f, NavMesh.AllAreas));
 
-            // Instantiate at the valid NavMesh position
-            GameObject enemy = Instantiate(enemyPrefab, hit.position, Quaternion.identity);
-            Debug.Log("Stick Figure spawned");
+            // Determine which enemy to spawn
+            GameObject enemyToSpawn;
+
+            // 20% chance to spawn a dog enemy
+            if (Random.value <= 0.25f) // Random.value generates a float between 0.0 and 1.0
+            {
+                enemyToSpawn = dogEnemyPrefab;
+                Debug.Log("Dog enemy spawned");
+            }
+            else
+            {
+                enemyToSpawn = enemyPrefab;
+                Debug.Log("Stick Figure spawned");
+            }
+
+            // Instantiate the selected enemy at the valid NavMesh position
+            Instantiate(enemyToSpawn, hit.position, Quaternion.identity);
         }
     }
+
 }

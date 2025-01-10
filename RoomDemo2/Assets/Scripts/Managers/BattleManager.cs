@@ -33,6 +33,9 @@ public class BattleManager : MonoBehaviour
     private string[] textInventoryConsums;
     private string[] textInventoryMats;
 
+    //Skills
+    [SerializeField] private GameObject skillsPanel;
+
     private int[] inventoryWeaponsAmounts;
     private int[] inventorConsumsAmounts;
     private int[] inventoryMatsAmounts;
@@ -59,12 +62,14 @@ public class BattleManager : MonoBehaviour
 
     [SerializeField] private Sprite enemySprite; // Default sprite for enemies with NavigationScript
     [SerializeField] private Sprite guardSprite; // Default sprite for enemies without NavigationScript
+    [SerializeField] private Sprite dogSprite;
     [SerializeField] private GameObject enemyHealthPrefab; // Prefab for "enemyhealth" gameobject with slider setup
 
     private List<GameObject> activeEnemyHealthUI = new List<GameObject>(); // Track active health bars
     private List<HealthManager> enemyHealthManagers = new List<HealthManager>(); // Track enemy health managers
     //private List<EnemyDamageManager> enemyDamageManagers = new List<EnemyDamageManager>(); //track enemy damage managers
     private Dictionary<int, EnemyDamageManager> enemyDamageManagersMap = new Dictionary<int, EnemyDamageManager>();
+    private string[] enemyNames;
 
     [SerializeField] private PlayerHealth playerHealthManager; // Track player health manager
     [SerializeField] private PlayerMovement playerMovementManager; //for stamina managing
@@ -133,9 +138,11 @@ public class BattleManager : MonoBehaviour
 
         // Assign sprites to enemy UI slots, activate them, and create health sliders
         int enemyCount = Mathf.Min(enemies.Count, enemyImages.Count);
+        enemyNames = new string[enemyCount];
         for (int i = 0; i < enemyCount; i++)
         {
             IEnemy enemy = enemies[i];
+            enemyNames[i]=enemy.GetType().Name;
             GameObject enemyObject = (enemy as MonoBehaviour)?.gameObject;
 
             if (enemyObject != null)
@@ -147,17 +154,35 @@ public class BattleManager : MonoBehaviour
                     enemyImageSlot.gameObject.SetActive(true); // Activate the image slot
 
                     // Assign sprite based on NavigationScript presence
+                    /*                    if (enemyObject.GetComponent<NavigationScript>() != null)
+                                        {
+                                            enemyImageSlot.sprite = enemySprite;
+                                        }
+                                        else
+                                        {
+                                            enemyImageSlot.sprite = guardSprite;
+                                        }*/
                     if (enemyObject.GetComponent<NavigationScript>() != null)
                     {
+                        // Handle soldier logic
                         enemyImageSlot.sprite = enemySprite;
+                    }
+                    else if (enemyObject.GetComponent<GuardNavigation>() != null)
+                    {
+                        // Handle guard logic
+                        enemyImageSlot.sprite = guardSprite;
+                    }
+                    else if (enemyObject.GetComponent<DogNavigationScript>() != null)
+                    { 
+                        enemyImageSlot.sprite = dogSprite;
                     }
                     else
                     {
-                        enemyImageSlot.sprite = guardSprite;
+                        enemyImageSlot.sprite = enemySprite;
                     }
 
-                    // Create health slider above the enemy image
-                    GameObject healthUI = Instantiate(enemyHealthPrefab, enemyImageSlot.transform.parent);
+                        // Create health slider above the enemy image
+                        GameObject healthUI = Instantiate(enemyHealthPrefab, enemyImageSlot.transform.parent);
                     RectTransform healthRect = healthUI.GetComponent<RectTransform>();
                     healthRect.anchoredPosition = enemyImageSlot.rectTransform.anchoredPosition + new Vector2(0, 150); // Position above the image
                     activeEnemyHealthUI.Add(healthUI);
@@ -224,11 +249,29 @@ public class BattleManager : MonoBehaviour
 
 
                         // Set enemy name and health info text
+                        /*                        TextMeshProUGUI healthInfoText = healthUI.GetComponentInChildren<TextMeshProUGUI>();
+                                                if (healthInfoText != null)
+                                                {
+                                                    string enemyName = enemyObject.GetComponent<NavigationScript>() != null ? "Soldier" : "Guard";
+                                                    healthInfoText.text = $"{enemyName}\n{Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
+                                                }*/
                         TextMeshProUGUI healthInfoText = healthUI.GetComponentInChildren<TextMeshProUGUI>();
                         if (healthInfoText != null)
                         {
-                            string enemyName = enemyObject.GetComponent<NavigationScript>() != null ? "Soldier" : "Guard";
-                            healthInfoText.text = $"{enemyName}\n{Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
+                            if (enemyObject.GetComponent<NavigationScript>() != null) { 
+                                string enemyName = "Soldier"; // Retrieve enemy name from dictionary
+                                healthInfoText.text = $"{enemyName}\n{Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
+                            }
+                            if (enemyObject.GetComponent<GuardNavigation>() != null)
+                            {
+                                string enemyName = "Guard"; // Retrieve enemy name from dictionary
+                                healthInfoText.text = $"{enemyName}\n{Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
+                            }
+                            if (enemyObject.GetComponent<DogNavigationScript>() != null)
+                            {
+                                string enemyName = "Dog"; // Retrieve enemy name from dictionary
+                                healthInfoText.text = $"{enemyName}\n{Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
+                            }
                         }
                     }
                 }
@@ -353,7 +396,6 @@ public class BattleManager : MonoBehaviour
             btn.gameObject.SetActive(false);
         }
         StartCoroutine(ExecuteEndTurn());
-        Debug.Log("button works");
     }
 
     private IEnumerator ExecuteEndTurn()
@@ -683,6 +725,11 @@ public class BattleManager : MonoBehaviour
                     float chance = effect.critchance;
                     float baseDamage = effect.damage;
                     float multiplier = effect.critmultiplier;
+                    int damageTypeIndex = effect.damageType;
+
+
+                    EnemyResistanceManager.EnemyResistances.TryGetValue(enemyNames[targetedEnemyIndex], out var enemyResistanceArray);
+
                     gamePlayerStamina = gamePlayerStamina - effect.staminaUse;
                     gamePlayerStamina = Mathf.Max(gamePlayerStamina, 0);
                     updatePlayerStaminaDisplay();
@@ -701,7 +748,7 @@ public class BattleManager : MonoBehaviour
                         damage = baseDamage; // Normal damage
                         Debug.Log($"Enemy was hit ({damage}) with {gameEquippedItem}");
                     }
-
+                    damage = damage * enemyResistanceArray[damageTypeIndex];
                     // Apply randomness to the damage
                     float randomFactor = baseDamage * 0.05f; // 5% of the base damage
                     float minDamage = damage - randomFactor;
@@ -890,10 +937,23 @@ public class BattleManager : MonoBehaviour
 
     public void OnExitBattleButtonClick()
     {
-        EndBattle();
-        Debug.Log("Exited Battle");
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        ShowBattleLog();
+        // Generate a random number to determine success
+        if (UnityEngine.Random.value > 0.5f) // Random.value generates a float between 0.0 and 1.0
+        {
+            EndBattle();
+            Debug.Log("Exited Battle");
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else
+        {
+            gameEquippedItem = "";
+            EndTurn();
+            // Escape failed, update the log message
+            Debug.Log("Escape attempt failed!");
+            logText.SetText("You attempted to escape but you weren't successful.");
+        }
     }
 
     public void EndBattle()
@@ -973,13 +1033,14 @@ public class BattleManager : MonoBehaviour
         // If everything is valid, select the enemy
         targetedEnemyIndex = index;
         UpdateBorderPosition(index); // Update UI to show selected target
-        infoText.text = $"Targeted Enemy {index + 1}: {enemyHealthManagers[index].CurrentHealth}/{enemyHealthManagers[index].maxHealth} HP";
+        //infoText.text = $"Targeted Enemy {index + 1}: {enemyHealthManagers[index].CurrentHealth}/{enemyHealthManagers[index].maxHealth} HP";
         Debug.Log($"Enemy {index + 1} selected as target.");
     }
 
 
     public void ShowBattleLog()
     {
+        skillsPanel.SetActive(false);
         battleInventory.SetActive(false);
         logText.gameObject.SetActive( true );
         logTitle.gameObject.SetActive(true);
@@ -987,9 +1048,18 @@ public class BattleManager : MonoBehaviour
 
     public void ShowInventory()
     {
+        skillsPanel.SetActive(false);
         logText.gameObject.SetActive(false);
         logTitle.gameObject.SetActive(false);
         battleInventory.SetActive(true);
+    }
+
+    public void ShowSkills()
+    {
+        logText.gameObject.SetActive(false);
+        logTitle.gameObject.SetActive(false);
+        battleInventory.SetActive(false);
+        skillsPanel.SetActive(true);
     }
 
     public void weaponsSelected()

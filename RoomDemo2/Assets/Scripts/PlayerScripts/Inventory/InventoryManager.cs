@@ -12,12 +12,13 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private PlayerMovement playerMovementManger;
     [SerializeField] private ArmorInventory armorInventory;
     [SerializeField] GameObject particleEffectPrefab;
+    [SerializeField] private GameObject BattleCanvas;
 
     public bool isInventoryOpen = false;
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) && !BattleCanvas.activeInHierarchy)
         {
             ToggleInventory();
         }

@@ -70,7 +70,7 @@ public class HealthManager : MonoBehaviour
         string enemyType = gameObject.name.Replace("(Clone)", "").Trim(); // Adjust to remove (Clone)
 
         // Get potential drops
-        var drops = EnemyManager.GetDrops(enemyType);
+        var drops = EnemyDropManager.GetDrops(enemyType);
 
         foreach (var (itemId, dropChance) in drops)
         {

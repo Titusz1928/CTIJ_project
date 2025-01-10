@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &3405882285817115439
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4240784569955275143, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: abb60e041f00a9d43bca20613deb50e9, type: 2}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 19.458424
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.557
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 166.87047
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9774307
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.21125662
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -24.392
+      objectReference: {fileID: 0}
+    - target: {fileID: 4254279190538425369, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7098413946764699803, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_Name
+      value: DogEnemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 8456878132240812817, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      propertyPath: m_text
+      value: 'Dog
+
+'
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 1174873813781751296, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7098413946764699803, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1200972953331986403}
+  m_SourcePrefab: {fileID: 100100000, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+--- !u!1 &5604375714816727988 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7098413946764699803, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+  m_PrefabInstance: {fileID: 3405882285817115439}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1200972953331986403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5604375714816727988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd3d641f6d052324185768e9eb2f8426, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Player: {fileID: 0}
+  activationDistance: 50
+  chasingDistance: 30
+  wanderingTime: 4
+  searchingTime: 4
+  investigateSpeed: 4
+  wanderSpeed: 3
+  chaseSpeed: 5
+  stateText: {fileID: 9019798205454104178}
+  attractionCheckRadius: 80
+--- !u!114 &9019798205454104178 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5938239414779020637, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+  m_PrefabInstance: {fileID: 3405882285817115439}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

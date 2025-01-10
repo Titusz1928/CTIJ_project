@@ -8,6 +8,7 @@ using UnityEngine.UI;  // Import to work with UI elements like InputField
 public class MainMenuManager : MonoBehaviour
 {
     [SerializeField] private GameObject mainmenuUI;
+    [SerializeField] private GameObject aboutmenuUI;
     [SerializeField] private GameObject pregamnemenuUI;
     [SerializeField] private TMP_InputField seedInputField;  // Reference to the InputField
 
@@ -35,15 +36,25 @@ public class MainMenuManager : MonoBehaviour
     }
 
     public void toPreGameMenu()
-    {
-        pregamnemenuUI.SetActive(true);
+    { 
         mainmenuUI.SetActive(false);
+        aboutmenuUI.SetActive(false);
+        pregamnemenuUI.SetActive(true);
+       
+    }
+
+    public void toAboutMenu()
+    {
+        pregamnemenuUI.SetActive(false);
+        mainmenuUI.SetActive(false);
+        aboutmenuUI.SetActive(true);
     }
 
     public void toMainmenu()
     {
-        mainmenuUI.SetActive(true);
         pregamnemenuUI.SetActive(false);
+        aboutmenuUI.SetActive(false);
+        mainmenuUI.SetActive(true);
     }
 
     public void ExitGame()
