@@ -8,6 +8,9 @@ public class PauseMenuManager : MonoBehaviour
 {
     public GameObject pauseMenuUI; // Assign the Pause Menu Panel in the Inspector
     public GameObject gameMenuUI;
+    [SerializeField] private GameObject mainPauseMenuUI;
+    [SerializeField] private GameObject settingsPauseMenuUI;
+
     public bool isPaused = false;
 
     void Update()
@@ -40,6 +43,18 @@ public class PauseMenuManager : MonoBehaviour
         gameMenuUI.SetActive(false);
         pauseMenuUI.SetActive(true); // Show the pause menu
         isPaused = true;
+    }
+
+    public void toSettingsPauseMenu()
+    {
+        mainPauseMenuUI.SetActive(false);
+        settingsPauseMenuUI.SetActive(true);
+    }
+
+    public void toMainPauseMenu()
+    {
+        settingsPauseMenuUI.SetActive(false );
+        mainPauseMenuUI.SetActive(true );
     }
 
     public void LoadMainMenu()

@@ -111,6 +111,8 @@ public class DogNavigationScript : MonoBehaviour, IEnemy
                 if (distanceToPlayer <= adjustedChasingDistance)
                 {
                     Debug.Log("Switching to Chasing state");
+                    SceneMusicController musicController = FindObjectOfType<SceneMusicController>();
+                    AudioManager.Instance.PlaySoundEffect(musicController.gameoverSound);
                     currentState = EnemyState.Chasing;
                     UpdateStateText();
                 }

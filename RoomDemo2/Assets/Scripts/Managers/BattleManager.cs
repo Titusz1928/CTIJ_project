@@ -13,12 +13,14 @@ using System.Buffers.Text;
 
 public class BattleManager : MonoBehaviour
 {
+
     [SerializeField] private GameObject battleCanvas;
 
     [SerializeField] private TextMeshProUGUI infoText;
     [SerializeField] private TextMeshProUGUI playerHealthText;
     [SerializeField] private TextMeshProUGUI playerStaminaText;
     [SerializeField] private TextMeshProUGUI gameOverText;
+
 
     [SerializeField] private Button[] gameButtons;
 
@@ -80,6 +82,23 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle(List<IEnemy> enemies, float playerHealth, float playerStamina)
     {
+        SceneMusicController musicController = FindObjectOfType<SceneMusicController>();
+
+        if (musicController != null)
+        {
+            // Play the battle start sound effect
+            if (AudioManager.Instance != null && musicController.battleStartSound != null)
+            {
+                Debug.Log("calling Audio Manager and attempting to play sound effect");
+                AudioManager.Instance.PlaySoundEffect(musicController.battleStartSound);
+            }
+            musicController.playBattleMusic();
+        }
+        else
+        {
+            Debug.LogError("SceneMusicController not found in the scene!");
+        }
+
         if (inventoryManager.isInventoryOpen)
         {
             inventoryManager.ToggleInventory();
@@ -915,6 +934,8 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator HandleGameOver()
     {
+        SceneMusicController musicController = FindObjectOfType<SceneMusicController>();
+        AudioManager.Instance.PlaySoundEffect(musicController.gameoverSound);
         // Display the Game Over text
         gameOverText.gameObject.SetActive(true);
         playerHealthSlider.gameObject.SetActive(false);
@@ -980,6 +1001,16 @@ public class BattleManager : MonoBehaviour
             Destroy(healthUI);
         }
         activeEnemyHealthUI.Clear();
+        SceneMusicController musicController = FindObjectOfType<SceneMusicController>();
+
+        if (musicController != null)
+        {
+            musicController.playGameMusic();
+        }
+        else
+        {
+            Debug.LogError("SceneMusicController not found in the scene!");
+        }
     }
 
     private void UpdateBorderPosition(int index)

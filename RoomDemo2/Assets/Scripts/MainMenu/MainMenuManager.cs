@@ -10,6 +10,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject mainmenuUI;
     [SerializeField] private GameObject aboutmenuUI;
     [SerializeField] private GameObject pregamnemenuUI;
+    [SerializeField] private GameObject settingsmenuUI;
     [SerializeField] private TMP_InputField seedInputField;  // Reference to the InputField
 
     public void StartGame()
@@ -39,6 +40,7 @@ public class MainMenuManager : MonoBehaviour
     { 
         mainmenuUI.SetActive(false);
         aboutmenuUI.SetActive(false);
+        settingsmenuUI.SetActive(false);
         pregamnemenuUI.SetActive(true);
        
     }
@@ -47,6 +49,7 @@ public class MainMenuManager : MonoBehaviour
     {
         pregamnemenuUI.SetActive(false);
         mainmenuUI.SetActive(false);
+        settingsmenuUI.SetActive(false);
         aboutmenuUI.SetActive(true);
     }
 
@@ -54,7 +57,16 @@ public class MainMenuManager : MonoBehaviour
     {
         pregamnemenuUI.SetActive(false);
         aboutmenuUI.SetActive(false);
+        settingsmenuUI.SetActive(false);
         mainmenuUI.SetActive(true);
+    }
+
+    public void toSettingsMenu()
+    {
+        pregamnemenuUI.SetActive(false);
+        aboutmenuUI.SetActive(false);
+        mainmenuUI.SetActive(false);
+        settingsmenuUI.SetActive(true);
     }
 
     public void ExitGame()

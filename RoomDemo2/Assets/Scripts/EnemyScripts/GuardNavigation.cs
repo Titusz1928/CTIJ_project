@@ -81,6 +81,16 @@ public class GuardNavigation : MonoBehaviour, IEnemy
                 SearchForPlayer(distanceToPlayer);
                 if (distanceToPlayer <= chasingDistance)
                 {
+                    if (AudioManager.Instance != null)
+                    {
+                        Debug.Log("AudioManager is accessible in second scene");
+                        SceneMusicController musicController = FindObjectOfType<SceneMusicController>();
+                        AudioManager.Instance.PlaySoundEffect(musicController.gameoverSound);
+                    }
+                    else
+                    {
+                        Debug.LogError("AudioManager is not accessible in second scene!");
+                    }
                     currentState = EnemyState.Chasing;
                     UpdateStateText();
                 }

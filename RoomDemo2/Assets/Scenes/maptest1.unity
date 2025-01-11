@@ -547,6 +547,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1584620307}
   enemyPrefab: {fileID: 7098413946764699803, guid: 39ccaf607b673f3488ab66ed92f3cf69, type: 3}
+  dogEnemyPrefab: {fileID: 0}
   checkInterval: 5
   maxSpawnRadius: 100
   minSpawnRadius: 50
@@ -1072,6 +1073,7 @@ MonoBehaviour:
   logText: {fileID: 1150432931}
   inventoryManager: {fileID: 1584620314}
   battleInventory: {fileID: 246639289}
+  skillsPanel: {fileID: 0}
   armorValueText: {fileID: 1239667866}
   armorInventory: {fileID: 1584620315}
   equippedItemText: {fileID: 1757528398}
@@ -1088,6 +1090,7 @@ MonoBehaviour:
   targetedEnemyBorder: {fileID: 1314207531}
   enemySprite: {fileID: 21300000, guid: 4635e83e67927414ca673ee15c2ccf6d, type: 3}
   guardSprite: {fileID: 21300000, guid: 31c62efeb2024964d88ce88260f5d5f6, type: 3}
+  dogSprite: {fileID: 0}
   enemyHealthPrefab: {fileID: 7605500728419837182, guid: 0f0e34b9045657f48b974b8c2e62c401, type: 3}
   playerHealthManager: {fileID: 1584620311}
   playerMovementManager: {fileID: 1584620309}
@@ -2640,7 +2643,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7697247820311352413, guid: 73d29885caea626498a086b2d7b4a5f7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.679
+      value: 0.66
       objectReference: {fileID: 0}
     - target: {fileID: 7697247820311352413, guid: 73d29885caea626498a086b2d7b4a5f7, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9024,6 +9027,8 @@ MonoBehaviour:
   playerHealth: {fileID: 1584620311}
   playerMovementManger: {fileID: 1584620309}
   armorInventory: {fileID: 1584620315}
+  particleEffectPrefab: {fileID: 0}
+  BattleCanvas: {fileID: 0}
   isInventoryOpen: 0
 --- !u!114 &1584620315
 MonoBehaviour:
@@ -9043,6 +9048,7 @@ MonoBehaviour:
   BodyArmorImage2: {fileID: 1714017346}
   BootsImage1: {fileID: 491660767}
   BootsImage2: {fileID: 473193080}
+  particleEffectPrefab: {fileID: 0}
 --- !u!1 &1603427729
 GameObject:
   m_ObjectHideFlags: 0
