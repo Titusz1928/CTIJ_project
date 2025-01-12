@@ -140,6 +140,8 @@ public class NavigationScript : MonoBehaviour, IEnemy
                 Investigate();
                 if (distanceToPlayer <= adjustedChasingDistance && !GameManager.Instance.CreativeMode)
                 {
+                    SceneMusicController musicController = FindObjectOfType<SceneMusicController>();
+                    AudioManager.Instance.PlaySoundEffect(musicController.gameoverSound);
                     Debug.Log("Switching to Chasing state");
                     currentState = EnemyState.Chasing;
                     UpdateStateText();
