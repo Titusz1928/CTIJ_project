@@ -79,7 +79,7 @@ public class GuardNavigation : MonoBehaviour, IEnemy
 
             case EnemyState.Searching:
                 SearchForPlayer(distanceToPlayer);
-                if (distanceToPlayer <= chasingDistance)
+                if (distanceToPlayer <= chasingDistance && !GameManager.Instance.CreativeMode)
                 {
                     if (AudioManager.Instance != null)
                     {

@@ -108,7 +108,7 @@ public class NavigationScript : MonoBehaviour, IEnemy
             case EnemyState.Searching:
                // Debug.Log("State: Searching");
                 SearchForPlayer(distanceToPlayer);
-                if (distanceToPlayer <= adjustedChasingDistance)
+                if (distanceToPlayer <= adjustedChasingDistance && !GameManager.Instance.CreativeMode)
                 {
                     Debug.Log("Switching to Chasing state");
                     SceneMusicController musicController = FindObjectOfType<SceneMusicController>();
@@ -138,7 +138,7 @@ public class NavigationScript : MonoBehaviour, IEnemy
             case EnemyState.Investigating:
                 //Debug.Log("State: Investigating");
                 Investigate();
-                if (distanceToPlayer <= adjustedChasingDistance)
+                if (distanceToPlayer <= adjustedChasingDistance && !GameManager.Instance.CreativeMode)
                 {
                     Debug.Log("Switching to Chasing state");
                     currentState = EnemyState.Chasing;

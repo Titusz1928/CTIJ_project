@@ -317,7 +317,7 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
 
-            if (enemiesInBattle.Count > 0 && battleManager != null)
+            if (enemiesInBattle.Count > 0 && battleManager != null && !GameManager.Instance.CreativeMode)
             {
                 float currentPlayerHealth = playerHealthManager.getCurrentHealth();
                 battleManager.StartBattle(enemiesInBattle, currentPlayerHealth, currentStamina);
@@ -325,7 +325,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                Debug.Log("No enemies eligible for battle.");
+                Debug.Log("No enemies eligible for battle or spectator gamemode");
             }
         }
     }

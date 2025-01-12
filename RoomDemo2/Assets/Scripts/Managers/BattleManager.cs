@@ -10,6 +10,7 @@ using Unity.VisualScripting;
 using GDS.Sample;
 using System.Linq;
 using System.Buffers.Text;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class BattleManager : MonoBehaviour
 {
@@ -92,7 +93,22 @@ public class BattleManager : MonoBehaviour
                 Debug.Log("calling Audio Manager and attempting to play sound effect");
                 AudioManager.Instance.PlaySoundEffect(musicController.battleStartSound);
             }
-            musicController.playBattleMusic();
+            int nrEnemies = Mathf.Min(enemies.Count, enemyImages.Count);
+            float hpCount = 0;
+            for (int i = 0; i < nrEnemies; i++)
+            {
+                GameObject enemyObject = (enemies[i] as MonoBehaviour)?.gameObject;
+                hpCount = hpCount + (float)enemyObject.GetComponent<HealthManager>()?.maxHealth;
+            }
+            Debug.Log("total enemy hp=" + hpCount);
+            if (hpCount < 250)
+            {
+                musicController.playBattleMusic();
+            }
+            else
+            {
+                musicController.playBigBattleMusic();
+            }
         }
         else
         {

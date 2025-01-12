@@ -8,6 +8,7 @@ public class SceneMusicController : MonoBehaviour
 {
     public AudioClip sceneMusic;
     public AudioClip battleMusic;
+    public AudioClip bigBattleMusic;
     public AudioClip battleStartSound;
     public AudioClip gameoverSound;
 
@@ -29,6 +30,14 @@ public class SceneMusicController : MonoBehaviour
         if (AudioManager.Instance != null && battleMusic != null)
         {
             AudioManager.Instance.PlayMusic(battleMusic);
+        }
+    }
+
+    public void playBigBattleMusic()
+    {
+        if (AudioManager.Instance != null && bigBattleMusic != null)
+        {
+            AudioManager.Instance.PlayMusic(bigBattleMusic);
         }
     }
 }

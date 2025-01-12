@@ -7,6 +7,7 @@ public class InfoDisplayManager : MonoBehaviour
 {
     [SerializeField] private GameObject infoCanvas;  // Reference to the UI Canvas GameObject
     [SerializeField] private TextMeshProUGUI seedText;  // Reference to the TextMeshPro for displaying seed
+    [SerializeField] private TextMeshProUGUI gameModeText;
     [SerializeField] private TextMeshProUGUI coordsText;  // Reference to the TextMeshPro for displaying coordinates
     [SerializeField] private GameObject player;  // Reference to the player GameObject
 
@@ -16,6 +17,17 @@ public class InfoDisplayManager : MonoBehaviour
         if (seedText != null)
         {
             seedText.SetText("Seed: " + GameManager.Instance.Seed.ToString());
+        }
+        if (gameModeText != null)
+        {
+            if (GameManager.Instance.CreativeMode)
+            {
+                gameModeText.SetText("Spectator mode");
+            }
+            else
+            {
+                gameModeText.SetText("Survival mode");
+            }
         }
 
         if (infoCanvas != null)

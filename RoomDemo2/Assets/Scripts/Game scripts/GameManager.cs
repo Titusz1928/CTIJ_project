@@ -10,6 +10,9 @@ public class GameManager : MonoBehaviour
 
     public static GameObject BattleCanvas;
 
+    // Creative Mode state
+    public bool CreativeMode { get; private set; } = false;
+
     void Awake()
     {
         // Ensure only one instance of GameManager exists
@@ -47,4 +50,11 @@ public class GameManager : MonoBehaviour
         Seed = Random.Range(0, int.MaxValue);
         Debug.Log($"Random seed generated: {Seed}");
     }
+
+    public void ToggleCreativeMode()
+    {
+        CreativeMode = !CreativeMode;
+        Debug.Log($"Creative Mode is now {(CreativeMode ? "enabled" : "disabled")}");
+    }
+
 }
