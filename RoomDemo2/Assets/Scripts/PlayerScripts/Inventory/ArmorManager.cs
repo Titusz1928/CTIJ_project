@@ -15,7 +15,9 @@ public class ArmorManager : MonoBehaviour
 
     public static readonly Dictionary<BaseId, int> Effects = new()
     {
+        { BaseId.LeatherHelmet, 6 },
         { BaseId.WarriorHelmet, 8 },
+        { BaseId.LeatherBoots, 4 },
         { BaseId.SteelBoots, 6 },
         { BaseId.LeatherArmor, 8 },
         { BaseId.SteelArmor, 12 }

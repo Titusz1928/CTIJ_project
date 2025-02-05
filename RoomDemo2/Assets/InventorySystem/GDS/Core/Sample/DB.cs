@@ -13,11 +13,14 @@ namespace GDS.Sample {
     /// </summary>
     public static class DB {
         public static List<SampleItemBase> AllBases = new() {
-            new (WarriorHelmet, "Warrior Helmet", "Shared/Icons/helmet", false,  Size2x2, ItemClass.Helmet),
-            new (SteelBoots, "SteelBoots", "Shared/Icons/boots", false, Size2x2, ItemClass.Boots),
+            new (LeatherHelmet, "LeatherHelmet", "Shared/Icons/helmet", false,  Size2x2, ItemClass.Helmet),
+            new (WarriorHelmet, "Warrior Helmet", "Shared/Icons/steelhelmet", false,  Size2x2, ItemClass.Helmet),
+            new (SteelBoots, "SteelBoots", "Shared/Icons/steelboots", false, Size2x2, ItemClass.Boots),
+            new (LeatherBoots, "LeatherBoots", "Shared/Icons/boots", false, Size2x2, ItemClass.Boots),
             new (LeatherArmor, "LeatherArmor", "Shared/Icons/armor", false, Size2x3, ItemClass.BodyArmor),
             new (SteelArmor, "SteelArmor", "Shared/Icons/steelarmor", false, Size2x3, ItemClass.BodyArmor),
             new (ShortSword, "ShortSword", "Shared/Icons/sword", false, Size1x2, ItemClass.Weapon1H),
+            new (Spear, "Spear", "Shared/Icons/spear", false, Size1x2, ItemClass.Weapon1H),
             new (Apple, "Apple", "Shared/Icons/apple", true, Size1x1, ItemClass.Consumable),
             new (Club,"Club","Shared/Icons/club",false,Size1x1,ItemClass.Weapon1H),
             new (Wood, "Wood", "Shared/Icons/wood", true, Size1x1, ItemClass.Material),
@@ -41,11 +44,14 @@ namespace GDS.Sample {
     /// Used when creating an item
     /// </summary>
     public enum BaseId {
+        LeatherHelmet,
         WarriorHelmet,
         LeatherArmor,
         SteelArmor,
+        LeatherBoots,
         SteelBoots,
         ShortSword,
+        Spear,
         Apple,
         Wood,
         Stone,

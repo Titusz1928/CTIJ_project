@@ -3,6 +3,8 @@ using TMPro;
 using GDS.Core;
 using GDS.Sample;
 using GDS.Minimal;
+using System.Linq;
+using System.Collections.Generic;
 
 public class ChestInteraction : MonoBehaviour
 {
@@ -84,32 +86,54 @@ public class ChestInteraction : MonoBehaviour
         // Check if there are items left in the chest
         if (chest.openedCount < chest.totalItemsInChest)
         {
-            // Pick a random item from the database
-            var randomItemBase = DB.AllBases[Random.Range(0, DB.AllBases.Count)];
+            // Determine which items to draw from based on the chest type
+            List<SampleItemBase> itemsToDrawFrom;
 
-            // Create a new item instance
-            Item newItem = new Item(
-                Id: GDS.Core.ItemFactory.Id(),
-                ItemBase: randomItemBase,
-                ItemData: new ItemData(Quant: 1)
-            );
-
-            // Add the item to the main inventory
-            bool wasAdded = Store.Instance.MainInventory.AddItem(newItem);
-
-            if (wasAdded)
+            if (chest.chestType == ItemClass.NoItemClass)
             {
-                Debug.Log($"{randomItemBase.Name} added to inventory!");
-                chestUI.text = $"You found a {randomItemBase.Name}!";
+                // If no chest type is assigned, use all items
+                itemsToDrawFrom = DB.AllBases;
             }
             else
             {
-                Debug.Log($"Failed to add {randomItemBase.Name} to inventory. No space.");
-                chestUI.text = "Your inventory is full!";
+                // Otherwise, filter items based on the chest type
+                itemsToDrawFrom = DB.AllBases.Where(item => item.ItemClass == chest.chestType).ToList();
             }
 
-            // Increment the counter
-            chest.openedCount++;
+            if (itemsToDrawFrom.Count > 0)
+            {
+                // Pick a random item from the list
+                var randomItemBase = itemsToDrawFrom[Random.Range(0, itemsToDrawFrom.Count)];
+
+                // Create a new item instance
+                Item newItem = new Item(
+                    Id: GDS.Core.ItemFactory.Id(),
+                    ItemBase: randomItemBase,
+                    ItemData: new ItemData(Quant: 1)
+                );
+
+                // Add the item to the main inventory
+                bool wasAdded = Store.Instance.MainInventory.AddItem(newItem);
+
+                if (wasAdded)
+                {
+                    Debug.Log($"{randomItemBase.Name} added to inventory!");
+                    chestUI.text = $"You found a {randomItemBase.Name}!";
+                }
+                else
+                {
+                    Debug.Log($"Failed to add {randomItemBase.Name} to inventory. No space.");
+                    chestUI.text = "Your inventory is full!";
+                }
+
+                // Increment the counter
+                chest.openedCount++;
+            }
+            else
+            {
+                Debug.Log("No items of the specified type found in the database.");
+                chestUI.text = "The chest is empty.";
+            }
         }
         else
         {
